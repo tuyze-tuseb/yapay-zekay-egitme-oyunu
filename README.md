@@ -1,0 +1,1 @@
+# yapay-zekay--egitme-oyunu
