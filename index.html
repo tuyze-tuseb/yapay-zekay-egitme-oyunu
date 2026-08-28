@@ -80,9 +80,11 @@
             color: var(--ink-2); padding-right: 6px; }
   .speech b { color: var(--ink); font-weight: 700; }
   .tools { display: flex; gap: 8px; }
-  .tool { width: 46px; height: 46px; border-radius: 14px; border: 1px solid var(--line);
+  .tool { width: clamp(52px,6.6vh,64px); height: clamp(52px,6.6vh,64px);
+          border-radius: 16px; border: 1px solid var(--line);
           background: var(--surface); color: var(--ink-2); cursor: pointer;
-          display: grid; place-items: center; font-size: 1.15rem; transition: all .16s; }
+          display: grid; place-items: center; font-size: clamp(1.5rem,2.9vh,1.95rem);
+          transition: all .16s; }
   .tool:hover { border-color: var(--cyan); color: var(--navy-2); }
   .tool:active { transform: scale(.93); }
   .tool.on { background: var(--navy); border-color: var(--navy); color: #fff; }
@@ -106,8 +108,8 @@
           box-shadow: var(--sh-1); padding: clamp(16px,2.2vh,24px) clamp(14px,1.6vw,22px);
           width: clamp(210px,22vw,310px); text-align: left; position: relative; }
   .step .num { position: absolute; top: 14px; right: 16px; font-size: .78rem; font-weight: 800; color: var(--ink-3); }
-  .step .badge-ic { width: clamp(38px,5vh,48px); height: clamp(38px,5vh,48px); border-radius: 14px;
-                    display: grid; place-items: center; font-size: clamp(1.37rem,2.69vh,1.71rem);
+  .step .badge-ic { width: clamp(50px,6.6vh,64px); height: clamp(50px,6.6vh,64px); border-radius: 17px;
+                    display: grid; place-items: center; font-size: clamp(1.8rem,3.5vh,2.25rem);
                     margin-bottom: 12px; }
   .step:nth-child(1) .badge-ic { background: var(--sky); color: var(--navy-2); }
   .step:nth-child(2) .badge-ic { background: var(--mint-soft); color: #3E8F68; }
@@ -121,7 +123,7 @@
          display: inline-flex; align-items: center; gap: 10px; transition: all .18s; }
   .cta:hover { background: var(--navy-2); transform: translateY(-2px); box-shadow: 0 12px 30px rgba(18,56,92,.28); }
   .cta:active { transform: translateY(0) scale(.98); }
-  .cta .ic { font-size: 1.15em; }
+  .cta .ic { font-size: 1.4em; }
   .foot { font-size: .78rem; font-weight: 600; color: var(--ink-3); letter-spacing: .01em; }
 
   .ver { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px;
@@ -138,8 +140,8 @@
   .rail { position: absolute; top: 0; bottom: 0; width: clamp(180px,22vw,340px); z-index: 2;
           display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
           pointer-events: none; transition: background .25s; }
-  .rail .rail-ic { width: clamp(56px,8vh,86px); height: clamp(56px,8vh,86px); border-radius: 24px;
-                   display: grid; place-items: center; font-size: clamp(1.94rem,3.82vh,2.81rem); }
+  .rail .rail-ic { width: clamp(76px,10.6vh,114px); height: clamp(76px,10.6vh,114px); border-radius: 28px;
+                   display: grid; place-items: center; font-size: clamp(2.6rem,5.1vh,3.8rem); }
   .rail .rail-name { font-size: clamp(1.14rem,2.35vh,1.65rem); font-weight: 800; letter-spacing: .04em; }
   .rail .rail-count { font-size: clamp(0.94rem,1.74vh,1.18rem); font-weight: 600; color: var(--ink-3); }
   .rail-sick { left: 0; background: linear-gradient(90deg, rgba(227,154,160,.20), transparent 88%); }
@@ -153,16 +155,16 @@
   .rail-well.hot { background: linear-gradient(270deg, rgba(127,203,168,.42), transparent 88%); }
   .rail .rail-ic { transition: transform .2s cubic-bezier(.34,1.56,.64,1); }
 
-  .card { position: absolute; z-index: 5; width: clamp(178px,19vw,268px);
+  .card { position: absolute; z-index: 5; width: clamp(190px,20vw,286px);
           background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
           box-shadow: var(--sh-2); padding: clamp(14px,2vh,20px) 14px clamp(12px,1.7vh,16px);
           text-align: center; user-select: none; touch-action: none; cursor: grab;
           will-change: transform; transition: border-color .2s, box-shadow .2s; }
   .card:active { cursor: grabbing; }
   .card.held { box-shadow: var(--sh-3); z-index: 10; border-color: var(--cyan-soft); }
-  .card .c-ic { width: clamp(46px,6.4vh,62px); height: clamp(46px,6.4vh,62px); margin: 0 auto 10px;
-                border-radius: 18px; display: grid; place-items: center;
-                font-size: clamp(1.6rem,3.25vh,2.22rem); background: var(--sky); color: var(--navy-2);
+  .card .c-ic { width: clamp(60px,8.2vh,80px); height: clamp(60px,8.2vh,80px); margin: 0 auto 11px;
+                border-radius: 21px; display: grid; place-items: center;
+                font-size: clamp(2.1rem,4.2vh,2.85rem); background: var(--sky); color: var(--navy-2);
                 pointer-events: none; }
   .card .c-txt { font-size: clamp(0.97rem,1.74vh,1.2rem); font-weight: 600; line-height: 1.3;
                  color: var(--ink); pointer-events: none; }
@@ -185,8 +187,8 @@
   .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
            box-shadow: var(--sh-1); padding: 10px 16px; display: flex; align-items: center; gap: 12px;
            flex: 1; min-width: 0; }
-  .panel .p-ic { width: clamp(32px,4.4vh,42px); height: clamp(32px,4.4vh,42px); border-radius: 12px;
-                 display: grid; place-items: center; font-size: clamp(1.14rem,2.24vh,1.48rem); flex-shrink: 0;
+  .panel .p-ic { width: clamp(44px,5.8vh,56px); height: clamp(44px,5.8vh,56px); border-radius: 15px;
+                 display: grid; place-items: center; font-size: clamp(1.5rem,3vh,1.95rem); flex-shrink: 0;
                  background: var(--sky); color: var(--navy-2); }
   .panel .p-tx { min-width: 0; }
   .panel .p-tx span { display: block; }
@@ -216,9 +218,9 @@
             text-align: center; position: relative; animation: rise .35s cubic-bezier(.16,1,.3,1); z-index: 1;
             transition: border-color .35s; }
   @keyframes rise { from{transform:translateY(14px); opacity:0} to{transform:translateY(0); opacity:1} }
-  .q-card .c-ic { width: clamp(56px,7.6vh,76px); height: clamp(56px,7.6vh,76px); margin: 0 auto 10px;
-                  border-radius: 20px; display: grid; place-items: center;
-                  font-size: clamp(1.84rem,3.71vh,2.59rem); background: var(--sky); color: var(--navy-2);
+  .q-card .c-ic { width: clamp(76px,10vh,102px); height: clamp(76px,10vh,102px); margin: 0 auto 12px;
+                  border-radius: 25px; display: grid; place-items: center;
+                  font-size: clamp(2.7rem,5.5vh,3.7rem); background: var(--sky); color: var(--navy-2);
                   transition: all .35s; }
   .q-card .c-txt { font-size: clamp(1.16rem,2.2vh,1.56rem); font-weight: 700; line-height: 1.3; }
   .q-card.a-sick { border-color: var(--rose); }
@@ -236,7 +238,7 @@
             border-radius: var(--r-sm); border: 2px solid var(--line); background: var(--surface);
             font-size: clamp(1.12rem,2.15vh,1.44rem); font-weight: 700; color: var(--ink); cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 10px; transition: all .16s; }
-  .choice .ic { font-size: 1.2em; }
+  .choice .ic { font-size: 1.55em; }
   .choice:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--sh-1); }
   .choice:active:not(:disabled) { transform: scale(.97); }
   .choice:disabled { opacity: .45; cursor: default; }
@@ -261,6 +263,7 @@
          animation: rise .3s cubic-bezier(.16,1,.3,1); z-index: 1; display: flex; align-items: center;
          justify-content: center; gap: 10px; }
   .why b { font-weight: 800; }
+  .why .ic { font-size: 1.5em; flex-shrink: 0; }
   .btn { font-family: inherit; font-size: clamp(1.09rem,2.03vh,1.36rem); font-weight: 700; color: #fff;
          padding: clamp(11px,1.8vh,15px) clamp(24px,3.4vw,38px); border: none; border-radius: 999px;
          cursor: pointer; background: var(--navy); box-shadow: 0 6px 18px rgba(18,56,92,.2);
@@ -305,7 +308,7 @@
     .step { width: 100%; display: flex; align-items: flex-start; gap: 12px;
             padding: 14px 16px; }
     .step .num { display: none; }
-    .step .badge-ic { width: 40px; height: 40px; font-size: 1.15rem; margin-bottom: 0; flex-shrink: 0; }
+    .step .badge-ic { width: 48px; height: 48px; font-size: 1.5rem; margin-bottom: 0; flex-shrink: 0; }
     .step .step-tx { min-width: 0; }
     .step b { font-size: .95rem; margin-bottom: 3px; }
     .step p { font-size: .85rem; line-height: 1.4; }
@@ -321,16 +324,16 @@
     .bot { width: 42px; }
     .speech { font-size: .88rem; min-height: 40px; line-height: 1.35;
               order: 3; flex-basis: 100%; }
-    .tool { width: 38px; height: 38px; border-radius: 11px; font-size: .95rem; }
+    .tool { width: 44px; height: 44px; border-radius: 13px; font-size: 1.3rem; }
     .tools { margin-left: auto; }
 
     /* --- oyun alanı --- */
     .rail { width: 92px; gap: 7px; }
-    .rail .rail-ic { width: 46px; height: 46px; border-radius: 15px; font-size: 1.35rem; }
+    .rail .rail-ic { width: 58px; height: 58px; border-radius: 18px; font-size: 1.8rem; }
     .rail .rail-name { font-size: .78rem; letter-spacing: .02em; }
     .rail .rail-count { font-size: .68rem; }
-    .card { width: 150px; padding: 13px 9px 11px; }
-    .card .c-ic { width: 40px; height: 40px; border-radius: 13px; font-size: 1.2rem; margin-bottom: 7px; }
+    .card { width: 162px; padding: 13px 9px 11px; }
+    .card .c-ic { width: 52px; height: 52px; border-radius: 16px; font-size: 1.6rem; margin-bottom: 8px; }
     .card .c-txt { font-size: .8rem; line-height: 1.25; }
     .card .pill { font-size: .55rem; padding: 3px 9px; top: -8px; }
     .wm { width: 150px; opacity: .045; }
@@ -346,7 +349,7 @@
     .exam { gap: 8px; }
     .exam-head { font-size: .62rem; padding: 6px 14px; letter-spacing: .1em; }
     .q-card { padding: 13px 18px; width: 100%; max-width: 400px; }
-    .q-card .c-ic { width: 50px; height: 50px; border-radius: 16px; font-size: 1.5rem; margin-bottom: 7px; }
+    .q-card .c-ic { width: 64px; height: 64px; border-radius: 19px; font-size: 2rem; margin-bottom: 9px; }
     .q-card .c-txt { font-size: 1rem; }
     .duo { flex-direction: column; gap: 8px; max-width: 420px; flex: none; }
     .side { padding: 11px; gap: 8px; }
@@ -398,9 +401,9 @@
   /* çok dar telefonlar */
   @media (max-width: 420px) {
     .rail { width: 74px; }
-    .rail .rail-ic { width: 40px; height: 40px; font-size: 1.15rem; }
+    .rail .rail-ic { width: 50px; height: 50px; font-size: 1.55rem; }
     .rail .rail-name { font-size: .7rem; }
-    .card { width: 132px; }
+    .card { width: 142px; }
     .card .c-txt { font-size: .75rem; }
     .start h1 { font-size: 1.5rem; }
   }
@@ -437,7 +440,7 @@
   </div>
   <div class="rotate-tip"><span id="rotIc"></span> Telefonu yan çevirirsen oyun daha rahat oynanır</div>
   <button class="cta" onclick="startGame()"><span class="ic" id="ctaIc"></span> Oyuna Başla</button>
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">s1.3</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">s1.6</span></p>
 </div>
 
 <div class="stage">
@@ -460,8 +463,8 @@
     </div>
     <p class="speech" id="speech">Merhaba! Ben Zeki. Hasta ve sağlıklı durumları hiç bilmiyorum — bana öğretir misin?</p>
     <div class="tools">
-      <button class="tool on" id="sndBtn" onclick="toggleSound()" title="Ses"></button>
-      <button class="tool" id="vceBtn" onclick="toggleVoice()" title="Sesli anlatım"></button>
+      <button class="tool on" id="sndBtn" onclick="toggleSound()" title="Ses efektleri" aria-label="Ses efektlerini aç veya kapat"></button>
+      <button class="tool" id="vceBtn" onclick="toggleVoice()" title="Robot sesli anlatımı kapalı" aria-label="Robotun sesli anlatımını aç veya kapat"></button>
     </div>
   </div>
 
@@ -595,7 +598,16 @@ const P = {
   bulb:'<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6V16h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/>',
   volume:'<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="M16 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11"/>',
   mute:'<path d="M11 5 6 9H3v6h3l5 4Z"/><path d="m16 9 5 6M21 9l-5 6"/>',
-  mic:'<rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M9 22h6"/>',
+  speak:'<rect x="2.5" y="8.5" width="13" height="11" rx="3.5"/><path d="M9 5.2v3.3"/>'+
+        '<circle cx="9" cy="4" r="1.3" fill="currentColor" stroke="none"/>'+
+        '<circle cx="6.5" cy="13.5" r="1.15" fill="currentColor" stroke="none"/>'+
+        '<circle cx="11.5" cy="13.5" r="1.15" fill="currentColor" stroke="none"/>'+
+        '<path d="M18.2 11.2a4 4 0 0 1 0 5.6"/><path d="M20.8 8.8a7.5 7.5 0 0 1 0 10.4"/>',
+  speakOff:'<rect x="2.5" y="8.5" width="13" height="11" rx="3.5"/><path d="M9 5.2v3.3"/>'+
+        '<circle cx="9" cy="4" r="1.3" fill="currentColor" stroke="none"/>'+
+        '<circle cx="6.5" cy="13.5" r="1.15" fill="currentColor" stroke="none"/>'+
+        '<circle cx="11.5" cy="13.5" r="1.15" fill="currentColor" stroke="none"/>'+
+        '<path d="m18.5 11.5 4 4"/><path d="m22.5 11.5-4 4"/>',
   hand:'<path d="M18 11V6.5a1.5 1.5 0 0 0-3 0V11"/><path d="M15 10.5V4.5a1.5 1.5 0 0 0-3 0V11"/><path d="M12 10.5V5.5a1.5 1.5 0 0 0-3 0v7"/><path d="M9 12.5V9a1.5 1.5 0 0 0-3 0v6a7 7 0 0 0 7 7h1a7 7 0 0 0 7-7v-4a1.5 1.5 0 0 0-3 0"/>'
 };
 function ic(name, cls) {
@@ -705,8 +717,13 @@ const S = { grab:()=>beep([700],0.05), learn:()=>beep([523,698],0.09),
   win:()=>beep([523,659,784,1046],0.11) };
 function toggleSound(){ sound=!sound; $('sndBtn').classList.toggle('on',sound);
   $('sndBtn').innerHTML = ic(sound?'volume':'mute'); }
-function toggleVoice(){ voice=!voice; $('vceBtn').classList.toggle('on',voice);
-  if(!voice && window.speechSynthesis) speechSynthesis.cancel(); }
+function toggleVoice(){
+  voice=!voice;
+  $('vceBtn').classList.toggle('on',voice);
+  $('vceBtn').innerHTML = ic(voice ? 'speak' : 'speakOff');
+  $('vceBtn').title = voice ? 'Robot sesli anlatımı açık' : 'Robot sesli anlatımı kapalı';
+  if(!voice && window.speechSynthesis) speechSynthesis.cancel();
+}
 function say(t, speak=true){
   $('speech').textContent = t;
   if(voice && speak && window.speechSynthesis){
@@ -727,7 +744,7 @@ function mood(m){
 
 /* ============ ICON MOUNT ============ */
 $('sndBtn').innerHTML = ic('volume');
-$('vceBtn').innerHTML = ic('mic');
+$('vceBtn').innerHTML = ic('speakOff');
 $('s1').innerHTML = ic('rain');
 $('s2').innerHTML = ic('swap');
 $('s3').innerHTML = ic('flag');
