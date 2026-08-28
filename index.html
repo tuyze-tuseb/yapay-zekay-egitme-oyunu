@@ -370,6 +370,28 @@
     .trophy-ic { font-size: 2.2rem; }
   }
 
+
+  /* ==================== MOBİL PERFORMANS ==================== */
+  @media (max-width: 860px), (pointer: coarse) {
+    /* 90px bulanıklık + sonsuz animasyon mobil GPU'yu çok yoruyordu:
+       yerine statik degrade zemin kullanılıyor. */
+    .aurora { display: none; }
+    body { background:
+      radial-gradient(60vw 44vh at 8% 2%,  #DCEBF7 0%, transparent 62%),
+      radial-gradient(52vw 40vh at 96% 96%, #DCF0E7 0%, transparent 62%),
+      var(--bg); }
+    /* backdrop-filter mobilde çok pahalı */
+    .ov { backdrop-filter: none; background: rgba(245,249,252,.985); }
+    /* düşen kartların gölgesi sadeleşti (sürekli hareket eden katman) */
+    .card { box-shadow: 0 3px 10px rgba(18,56,92,.13); }
+    .card.held { box-shadow: 0 8px 20px rgba(18,56,92,.20); }
+    /* sürekli dönen etiket animasyonu kapalı */
+    .card .pill { animation: none !important; }
+    /* kompozit katman ipucu */
+    .card { will-change: transform; backface-visibility: hidden; }
+    .play { contain: layout paint; }
+  }
+
   /* çok dar telefonlar */
   @media (max-width: 420px) {
     .rail { width: 74px; }
@@ -727,17 +749,36 @@ const play = $('play');
 let deck = shuffle([...TEACH]);
 let live = [], raf=null, spawnT=null, running=false, lastT=performance.now();
 
+/* Ölçüler önbellekte tutulur: sürükleme sırasında DOM okuması yapılmaz.
+   (Her pointermove'da getBoundingClientRect/offsetWidth okumak reflow tetikleyip
+   mobilde ciddi takılmaya yol açıyordu.) */
+const D = { rect:null, pw:0, ph:0, rail:0 };
+function measure(){
+  D.rect = play.getBoundingClientRect();
+  D.pw = play.clientWidth;
+  D.ph = play.clientHeight;
+  const r = $('railSick');
+  D.rail = r ? r.offsetWidth : 0;
+}
+let measureT=null;
+function remeasure(){ clearTimeout(measureT); measureT=setTimeout(measure,120); }
+window.addEventListener('resize', remeasure);
+window.addEventListener('orientationchange', remeasure);
+window.addEventListener('scroll', remeasure, { passive:true });
+
 function startGame(){
   $('startScreen').style.display='none';
   play.classList.add('active');
   $('bottom').classList.add('active');
+  measure();
   meter();
   say('Kartlar düşmeye başlıyor. Yakala ve doğru tarafa fırlat.');
   running=true; loop(); raf=requestAnimationFrame(tick);
 }
 function loop(){
   if(!running) return;
-  if(taught < TARGET && live.length < 4) spawn();
+  const maxLive = window.innerWidth < 640 ? 2 : (window.innerWidth < 900 ? 3 : 4);
+  if(taught < TARGET && live.length < maxLive) spawn();
   const p = taught/TARGET;
   spawnT = setTimeout(loop, Math.max(700, 1500 - p*700));
 }
@@ -749,23 +790,24 @@ function spawn(){
   el.innerHTML = '<span class="pill p-'+c.d+'">'+DL[c.d]+'</span>'+
     '<div class="c-ic">'+ic(c.i)+'</div><div class="c-txt">'+c.t+'</div>';
   play.appendChild(el);
-  const pw=play.clientWidth, rw=$('railSick').offsetWidth, cw=el.offsetWidth;
-  let mn=rw+14, mx=pw-rw-cw-14;
-  if(mx<mn) mn=mx=Math.max(8,(pw-cw)/2);
+  if(!D.pw) measure();
+  const cw = el.offsetWidth, chh = el.offsetHeight;   // tek sefer, doğuşta
+  let mn=D.rail+14, mx=D.pw-D.rail-cw-14;
+  if(mx<mn) mn=mx=Math.max(8,(D.pw-cw)/2);
   const p = taught/TARGET;
-  const o = { el, c, x: mn+Math.random()*Math.max(0,mx-mn), y:-el.offsetHeight-12,
+  const o = { el, c, w:cw, x: mn+Math.random()*Math.max(0,mx-mn), y:-chh-12,
               vy: 110 + p*110 + Math.random()*40, held:false, vx:0, lx:0, lt:0 };
-  el.style.transform='translate('+o.x+'px,'+o.y+'px)';
+  el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0)';
   live.push(o); grabify(o);
 }
 function tick(now){
   const dt=Math.min(.05,(now-lastT)/1000); lastT=now;
-  const ph=play.clientHeight;
+  const ph=D.ph || play.clientHeight;
   for(let i=live.length-1;i>=0;i--){
     const o=live[i];
     if(o.held) continue;
     o.y += o.vy*dt;
-    o.el.style.transform='translate('+o.x+'px,'+o.y+'px)';
+    o.el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0)';
     if(o.y > ph+24){
       o.el.remove(); live.splice(i,1); deck.push(o.c);
       if(Math.random()<.2) say('Bir kart kaçtı, olsun. O yine düşecek.', false);
@@ -777,33 +819,34 @@ function grabify(o){
   const el=o.el;
   el.addEventListener('pointerdown', e=>{
     o.held=true; el.classList.add('held'); el.setPointerCapture(e.pointerId);
-    const r=play.getBoundingClientRect();
-    o.gx=e.clientX-r.left-o.x; o.gy=e.clientY-r.top-o.y;
-    o.lx=e.clientX; o.lt=performance.now(); S.grab();
+    measure();                                  // sürükleme başında tek ölçüm
+    o.gx=e.clientX-D.rect.left-o.x; o.gy=e.clientY-D.rect.top-o.y;
+    o.lx=e.clientX; o.lt=performance.now(); o.side=null; S.grab();
   });
   el.addEventListener('pointermove', e=>{
     if(!o.held) return;
-    const r=play.getBoundingClientRect();
-    o.x=e.clientX-r.left-o.gx; o.y=e.clientY-r.top-o.gy;
-    el.style.transform='translate('+o.x+'px,'+o.y+'px) rotate('+Math.max(-9,Math.min(9,o.vx*0.012))+'deg)';
+    o.x=e.clientX-D.rect.left-o.gx; o.y=e.clientY-D.rect.top-o.gy;
+    el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0) rotate('+Math.max(-9,Math.min(9,o.vx*0.012))+'deg)';
     const t=performance.now(), dm=t-o.lt;
     if(dm>0) o.vx=(e.clientX-o.lx)/dm*1000;
     o.lx=e.clientX; o.lt=t;
-    const cw=el.offsetWidth, pw=play.clientWidth, rw=$('railSick').offsetWidth;
-    const onSick=o.x<rw, onWell=o.x+cw>pw-rw;
-    $('railSick').classList.toggle('hot',onSick);
-    $('railWell').classList.toggle('hot',onWell);
-    el.classList.toggle('sick-hint',onSick);
-    el.classList.toggle('well-hint',onWell);
-  });
+    // sınıf değişimi yalnızca taraf DEĞİŞTİĞİNDE yapılır (her karede değil)
+    const side = o.x < D.rail ? 'sick' : (o.x+o.w > D.pw-D.rail ? 'well' : null);
+    if(side !== o.side){
+      o.side = side;
+      $('railSick').classList.toggle('hot', side==='sick');
+      $('railWell').classList.toggle('hot', side==='well');
+      el.classList.toggle('sick-hint', side==='sick');
+      el.classList.toggle('well-hint', side==='well');
+    }
+  }, { passive:true });
   const up=()=>{
     if(!o.held) return;
     o.held=false; el.classList.remove('held');
     $('railSick').classList.remove('hot'); $('railWell').classList.remove('hot');
-    const cw=el.offsetWidth, pw=play.clientWidth, rw=$('railSick').offsetWidth;
     let side=null;
-    if(o.x<rw || o.vx<-650) side='sick';
-    else if(o.x+cw>pw-rw || o.vx>650) side='well';
+    if(o.x<D.rail || o.vx<-650) side='sick';
+    else if(o.x+o.w>D.pw-D.rail || o.vx>650) side='well';
     if(side) fling(o,side);
     else { el.classList.remove('sick-hint','well-hint'); }
     o.vx=0;
@@ -815,8 +858,8 @@ function fling(o, side){
   const i=live.indexOf(o); if(i>=0) live.splice(i,1);
   const el=o.el;
   el.style.transition='transform .42s cubic-bezier(.4,0,1,1), opacity .42s';
-  const tx = side==='sick' ? -el.offsetWidth-90 : play.clientWidth+90;
-  el.style.transform='translate('+tx+'px,'+(o.y+70)+'px) rotate('+(side==='sick'?-28:28)+'deg)';
+  const tx = side==='sick' ? -o.w-90 : D.pw+90;
+  el.style.transform='translate3d('+tx+'px,'+(o.y+70)+'px,0) rotate('+(side==='sick'?-28:28)+'deg)';
   el.style.opacity='0';
   setTimeout(()=>el.remove(),440);
   learn(o.c, side);
@@ -965,6 +1008,7 @@ function final(){
   mood('happy'); S.win(); confetti(40);
 }
 function confetti(n=30){
+  if(window.innerWidth < 860) n = Math.round(n*0.45);   // mobilde daha az parçacık
   const cols=['#4FBEDC','#7FCBA8','#E9C97E','#12385C','#E39AA0'];
   for(let i=0;i<n;i++){
     const d=document.createElement('div');
