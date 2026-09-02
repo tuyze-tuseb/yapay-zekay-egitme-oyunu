@@ -514,8 +514,9 @@
     /* düşen kartların gölgesi sadeleşti (sürekli hareket eden katman) */
     .card { box-shadow: 0 3px 10px rgba(18,56,92,.13); }
     .card.held { box-shadow: 0 8px 20px rgba(18,56,92,.20); }
-    /* sürekli dönen etiket animasyonu kapalı */
+    /* sürekli dönen animasyonlar mobilde kapalı (GPU tasarrufu) */
     .card .pill { animation: none !important; }
+    .card.bonus::after { animation: none !important; opacity: .55; }
     /* kompozit katman ipucu */
     .card { will-change: transform; backface-visibility: hidden; }
     .play { contain: layout paint; }
@@ -578,7 +579,7 @@
     <p class="lede" id="lede">Yapay zekâ hiçbir şey bilmeden doğar. Ona örnekler göstererek hasta ve sağlıklı durumları ayırt etmeyi öğreteceksin.</p>
     <div class="steps">
       <div class="step"><span class="num">01</span><div class="badge-ic" id="s1"></div><div class="step-tx"><b>Kartlar düşüyor</b><p>Sağlık durumu kartları yukarıdan süzülerek iner. Düşen kartı parmağınla yakala.</p></div></div>
-      <div class="step"><span class="num">02</span><div class="badge-ic" id="s2"></div><div class="step-tx"><b>Sola veya sağa</b><p>Hasta ise sola, sağlıklı ise sağa fırlat. Yapay zekâ her karttan öğrenir.</p></div></div>
+      <div class="step"><span class="num">02</span><div class="badge-ic" id="s2"></div><div class="step-tx"><b>Sola veya sağa</b><p>Hasta ise sola, sağlıklı ise sağa fırlat. Altın kartlar çift puan kazandırır!</p></div></div>
       <div class="step" id="step3"><span class="num">03</span><div class="badge-ic" id="s3"></div><div class="step-tx"><b>Sınav zamanı</b><p>Hiç görülmemiş kartlar gelir. Önce sen tahmin et, sonra yapay zekânın cevabını gör.</p></div></div>
     </div>
     <div class="rotate-tip"><span id="rotIc"></span> Telefonu yan çevirirsen oyun daha rahat oynanır</div>
@@ -586,7 +587,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v2.8</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.1</span></p>
 </div>
 
 <div class="stage">
@@ -691,12 +692,12 @@
       <div class="p-tx"><b>Yapay zekâ öğreniyor</b><span>Ne kadar çok doğru örnek, o kadar isabetli tahmin.</span></div>
     </div>
     <div class="meter">
-      <div class="meter-top"><span class="lbl" id="mLbl">Öğrenilen örnek</span><span class="val" id="mVal">0 / 20</span></div>
+      <div class="meter-top"><span class="lbl" id="mLbl">Toplanan puan</span><span class="val" id="mVal">0 / 20</span></div>
       <div class="track"><div class="fill" id="mFill"></div></div>
     </div>
     <div class="panel">
       <div class="p-ic" id="goalIc"></div>
-      <div class="p-tx" id="goalTx"><b>Hedef: 20 örnek</b><span>Kolaydan çok zora — kelime oyunlarına dikkat.</span></div>
+      <div class="p-tx" id="goalTx"><b>Hedef: 25 puan</b><span>Kolaydan çok zora — kelime oyunlarına dikkat.</span></div>
     </div>
   </div>
 </div>
@@ -877,7 +878,9 @@ const pick1 = a => a[Math.floor(Math.random()*a.length)];
 
 /* ============ STATE ============ */
 let MODE = 'big';          // 'kid' = 10 yaş altı (sınavsız), 'big' = sınavlı
-let TARGET = 20;           // öğretilecek kart sayısı (moda göre belirlenir)
+/* Hedef = toplanacak PUAN. Normal kart 1, altın bonus kart 2 puan.
+   (25 puan ≈ 21 kart, 20 puan ≈ 17 kart sürükleme demektir.) */
+let TARGET = 25;
 let good=0, bad=0, taught=0, qi=0, youScore=0, yzScore=0, choice=null;
 let sound=true, voice=false;
 /* Eleman bulunamazsa oyunu çökertmeyen güvenli erişim.
@@ -977,14 +980,15 @@ function chooseMode(m){
   if(m === 'kid'){
     // Küçükler: çok zor kelime oyunları çıkarılır, 15 kart, daha sakin yağmur
     deck = shuffle(TEACH.filter(c => c.d !== 'cokzor'));
-    TARGET = 15;
+    TARGET = 20;                       // küçük mod: ~17 kart
     $('step3').classList.add('hidden');
     $('lede').textContent = 'Yapay zekâ hiçbir şey bilmiyor. Kartları doğru tarafa atarak ona hasta ve sağlıklı durumları öğreteceksin!';
-    $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' örnek</b><span>Hepsini öğretince kocaman bir sürpriz var!</span>';
+    $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Hepsini toplayınca kocaman bir sürpriz var!</span>';
   } else {
     deck = shuffle([...TEACH]);
-    TARGET = 20;
+    TARGET = 25;                       // büyük mod: ~21 kart
     $('step3').classList.remove('hidden');
+    $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Altın bonus kartlar çift puan kazandırır!</span>';
   }
   $('mVal').textContent = '0 / ' + TARGET;
   $('ageStep').classList.add('hidden');
@@ -1005,16 +1009,16 @@ let live = [], raf=null, spawnT=null, running=false, lastT=performance.now();
 /* Ölçüler önbellekte tutulur: sürükleme sırasında DOM okuması yapılmaz.
    (Her pointermove'da getBoundingClientRect/offsetWidth okumak reflow tetikleyip
    mobilde ciddi takılmaya yol açıyordu.) */
-const D = { rect:null, pw:0, ph:0, rail:0 };
+const D = { rect:null, pw:0, ph:0, rail:0, cw:0, ch:0 };
 function measure(){
   D.rect = play.getBoundingClientRect();
-  D.pw = play.clientWidth;
-  D.ph = play.clientHeight;
+  D.pw = play.clientWidth  || D.pw || 800;
+  D.ph = play.clientHeight || D.ph || 600;
   const r = $('railSick');
   D.rail = r ? r.offsetWidth : 0;
 }
 let measureT=null;
-function remeasure(){ clearTimeout(measureT); measureT=setTimeout(measure,120); }
+function remeasure(){ clearTimeout(measureT); measureT=setTimeout(()=>{ D.cw=0; D.ch=0; measure(); },120); }
 window.addEventListener('resize', remeasure);
 window.addEventListener('orientationchange', remeasure);
 window.addEventListener('scroll', remeasure, { passive:true });
@@ -1051,7 +1055,9 @@ function spawn(){
     '<div class="c-ic">'+ic(c.i)+'</div><div class="c-txt">'+c.t+'</div>';
   play.appendChild(el);
   if(!D.pw) measure();
-  const cw = el.offsetWidth, chh = el.offsetHeight;   // tek sefer, doğuşta
+  // kart boyutu CSS ile sabit: yalnızca ilk kartta ölçülür, sonra önbellekten
+  if(!D.cw){ D.cw = el.offsetWidth; D.ch = el.offsetHeight; }
+  const cw = D.cw, chh = D.ch;
   let mn=D.rail+14, mx=D.pw-D.rail-cw-14;
   if(mx<mn) mn=mx=Math.max(8,(D.pw-cw)/2);
   const p = taught/TARGET;
@@ -1064,7 +1070,7 @@ function spawn(){
 }
 function tick(now){
   const dt=Math.min(.05,(now-lastT)/1000); lastT=now;
-  const ph=D.ph || play.clientHeight;
+  const ph=D.ph;                      // önbellekten; her karede DOM okunmaz
   for(let i=live.length-1;i>=0;i--){
     const o=live[i];
     if(o.held) continue;
@@ -1215,10 +1221,10 @@ function comboLine(){
 function chatter(ok){
   const left = TARGET - taught;
   // dönüm noktaları önceliklidir
-  if(taught === 1) return 'İlk örneğimi aldım! Devam edelim.';
+  if(taught === 1) return 'İlk puanı aldık! Devam edelim.';
   if(left === 0)   return 'Hepsini öğrendim, harikaydın!';
-  if(left === 1)   return 'Son bir kart kaldı, hazırım!';
-  if(left === 3)   return 'Üç kart kaldı, son düzlük!';
+  if(left === 1)   return 'Son bir puan kaldı, hazırım!';
+  if(left === 3)   return 'Üç puan kaldı, son düzlük!';
   if(taught === Math.floor(TARGET/2)) return 'Yarıyı geçtik, beynim dolmaya başladı.';
 
   if(!ok) return pick1(PUZZLED);
@@ -1226,7 +1232,7 @@ function chatter(ok){
   const r = Math.random();
   if(r < 0.22) return pick1(JOKES);
   if(r < 0.55) return pick1(HAPPY);
-  return 'Şu ana kadar ' + taught + ' örnek öğrendim.';
+  return 'Şu ana kadar ' + taught + ' puan topladık.';
 }
 
 /* Her kartta çıkan, oyunu ENGELLEMEYEN bildirim. Kendiliğinden kaybolur. */
@@ -1254,7 +1260,7 @@ function flash(c, side, ok, bonus, comboHit){
     $('flashBody').textContent = comboLine().replace(/^[^!]+! /,'') ||
       'Arka arkaya doğru öğretiyorsun, çok hızlı öğreniyorum.';
   } else if(bonus && ok){
-    $('flashTitle').textContent = 'Bonus kart! Çift örnek sayıldı.';
+    $('flashTitle').textContent = 'Bonus kart! Çift puan.';
     $('flashBody').textContent = 'Bu çok değerli bir örnekti — iki kart birden öğrenmiş gibi oldum.';
   } else if(c.w){
     // açıklamalı kart: neden'i de göster, daha uzun kalsın
@@ -1302,7 +1308,7 @@ function finishTeach(){
   if(MODE === 'kid'){ celebrateKid(); return; }
 
   $('midOv').classList.remove('hidden');
-  $('midMsg').innerHTML = 'Bana <b>'+taught+' örnek</b> öğrettiniz. Artık hasta ve sağlıklı durumları tanımaya başladım. '+
+  $('midMsg').innerHTML = 'Bana <b>'+taught+' puanlık örnek</b> öğrettiniz. Artık hasta ve sağlıklı durumları tanımaya başladım. '+
     'Şimdi hiç görmediğim kartlar gelecek: önce <b>siz</b> tahmin edeceksiniz, sonra ben cevabımı açıklayacağım.';
   say('Eğitimim tamamlandı. Bakalım öğrendiklerimi hatırlıyor muyum?');
   mood('happy'); S.win();
@@ -1329,7 +1335,7 @@ function celebrateKid(){
   $('kidBadge').innerHTML = ic('check') + badge;
   $('kidMsg').textContent = msg + ' Bugün yapay zekânın nasıl öğrendiğini kendi ellerinle gösterdin.';
   $('kidStats').innerHTML =
-    '<div class="kid-stat"><div class="k-v">'+taught+'</div><div class="k-l">Öğretilen kart</div></div>' +
+    '<div class="kid-stat"><div class="k-v">'+taught+'</div><div class="k-l">Toplanan puan</div></div>' +
     '<div class="kid-stat"><div class="k-v">'+good+'</div><div class="k-l">Doğru öğretme</div></div>' +
     '<div class="kid-stat"><div class="k-v">%'+pct+'</div><div class="k-l">Başarı</div></div>' +
     (bestStreak>=3 ? '<div class="kid-stat"><div class="k-v">'+bestStreak+'</div><div class="k-l">En uzun seri</div></div>' : '');
@@ -1338,10 +1344,9 @@ function celebrateKid(){
   mood('happy');
   S.win();
   // kutlama: dalga dalga konfeti
-  confetti(70);
-  setTimeout(()=>confetti(50), 500);
-  setTimeout(()=>confetti(50), 1100);
-  setTimeout(()=>{ S.win(); confetti(40); }, 1700);
+  confetti(55);
+  setTimeout(()=>confetti(40), 600);
+  setTimeout(()=>{ S.win(); confetti(35); }, 1300);
 }
 
 /* ============ EXAM ============ */
@@ -1454,7 +1459,8 @@ function final(){
   mood('happy'); S.win(); confetti(40);
 }
 function confetti(n=30){
-  if(window.innerWidth < 860) n = Math.round(n*0.55);   // mobilde daha az parçacık
+  if(window.innerWidth < 860) n = Math.round(n*0.5);
+  n = Math.min(n, 60);                       // aynı anda aşırı düğüm oluşmasın   // mobilde daha az parçacık
   const cols=['#4FBEDC','#7FCBA8','#E9C97E','#12385C','#E39AA0'];
   for(let i=0;i<n;i++){
     const d=document.createElement('div');
