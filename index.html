@@ -325,6 +325,71 @@
   .kid-stat .k-v { font-size: clamp(1.7rem,4vh,2.6rem); font-weight: 800; color: var(--navy); line-height: 1; }
   .kid-stat .k-l { font-size: clamp(.68rem,1.2vh,.82rem); font-weight: 700; letter-spacing: .1em;
                    text-transform: uppercase; color: var(--ink-3); margin-top: 6px; }
+
+  /* ---------- Bonus (altın) kart ---------- */
+  .card.bonus { border-color: #E3B341; background: linear-gradient(155deg,#FFFDF5,#FFF6DC);
+                box-shadow: 0 0 0 4px rgba(227,179,65,.18), var(--sh-2); }
+  .card.bonus .c-ic { background: #FBEFCB; color: #A97C15; }
+  .card.bonus .pill { background: linear-gradient(90deg,#E3B341,#F2CE72); color: #5A4208; }
+  .card.bonus::after { content: ''; position: absolute; inset: -3px; border-radius: inherit;
+                       pointer-events: none; box-shadow: 0 0 18px rgba(227,179,65,.55);
+                       animation: shine 1.5s ease-in-out infinite; }
+  @keyframes shine { 0%,100%{opacity:.35} 50%{opacity:.9} }
+
+  /* ---------- Seri (kombo) göstergesi ---------- */
+  .streak { position: absolute; top: clamp(10px,2vh,20px); left: 50%;
+            transform: translateX(-50%) translateY(-10px) scale(.9);
+            z-index: 13; pointer-events: none;
+            background: linear-gradient(90deg,#FF9F45,#FF6B45); color: #fff;
+            border-radius: 999px; padding: clamp(7px,1.2vh,11px) clamp(16px,2vw,24px);
+            display: flex; align-items: center; gap: 9px;
+            box-shadow: 0 6px 20px rgba(255,107,69,.35);
+            opacity: 0; transition: opacity .2s, transform .3s cubic-bezier(.34,1.56,.64,1); }
+  .streak.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  .streak.pump { animation: pump .45s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes pump { 0%,100%{transform:translateX(-50%) scale(1)} 45%{transform:translateX(-50%) scale(1.18)} }
+  .streak .st-ic { font-size: clamp(1.2rem,2.4vh,1.6rem); display: grid; place-items: center; }
+  .streak .st-n { font-size: clamp(1.3rem,2.7vh,1.8rem); font-weight: 800; line-height: 1; }
+  .streak .st-l { font-size: clamp(.75rem,1.4vh,.95rem); font-weight: 700; letter-spacing: .02em; }
+
+  /* kombo ve bonus bildirimi renkleri */
+  .flash.combo { border-color: #FF8A45; color: #D2551F; background: #FFF7F1; }
+  .flash.gold  { border-color: #E3B341; color: #A97C15; background: #FFFCF2; }
+
+  /* ---------- Kart bildirimi (oyunu engellemez) ---------- */
+  .flash {
+    position: absolute; bottom: clamp(14px,2.6vh,30px); left: 50%;
+    transform: translateX(-50%) translateY(16px) scale(.95);
+    z-index: 14; pointer-events: none;            /* oyunu asla engellemez */
+    background: var(--surface); border-radius: var(--r-lg);
+    box-shadow: var(--sh-3); border: 3px solid var(--line);
+    padding: clamp(14px,2.2vh,22px) clamp(22px,2.6vw,34px);
+    display: flex; align-items: center; gap: clamp(14px,1.8vw,24px);
+    max-width: min(94%, 820px);
+    opacity: 0; transition: opacity .22s, transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .flash.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  .flash.good { border-color: var(--mint); color: #3E8F68; background: #F6FDF9; }
+  .flash.bad  { border-color: var(--rose); color: #C7616A; background: #FFF8F8; }
+  .flash-bot { width: clamp(74px,10vh,104px); flex-shrink: 0; }
+  .flash-bot svg { width: 100%; height: auto; display: block; }
+  .flash.good .flash-bot { animation: bop .55s cubic-bezier(.34,1.56,.64,1); }
+  .flash.bad  .flash-bot { animation: sag .7s ease-out; }
+  @keyframes sag { 0%{transform:translateY(-6px)} 55%{transform:translateY(4px) rotate(-6deg)} 100%{transform:translateY(0) rotate(0)} }
+  .flash-bot #fbMouth, .flash-bot circle { transition: all .3s; }
+  .flash-tx { text-align: left; min-width: 0; }
+  .flash-title { font-size: clamp(1.25rem,2.6vh,1.8rem); font-weight: 800; line-height: 1.15; }
+  .flash-body { font-size: clamp(1rem,1.95vh,1.32rem); font-weight: 500;
+                color: var(--ink-2); line-height: 1.4; margin-top: 5px; }
+
+  @media (max-width: 860px), (max-height: 560px) {
+    .flash { padding: 11px 15px; gap: 12px; bottom: 10px; max-width: 95%;
+             border-width: 2px; border-radius: var(--r-md); }
+    .flash-bot { width: 54px; }
+    .flash-title { font-size: 1.05rem; }
+    .flash-body { font-size: .9rem; line-height: 1.35; margin-top: 3px; }
+  }
+
   .conf { position: fixed; top: -24px; border-radius: 2px; pointer-events: none; z-index: 70;
           animation: drop linear forwards; }
   @keyframes drop { to { transform: translateY(108vh) rotate(680deg); opacity: .2; } }
@@ -521,7 +586,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v1.9</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v2.8</span></p>
 </div>
 
 <div class="stage">
@@ -561,6 +626,32 @@
       <div class="rail-ic" id="railWellIc"></div>
       <span class="rail-name">SAĞLIKLI</span>
       <span class="rail-count"><span id="wellN">0</span> kart</span>
+    </div>
+  <div class="streak hidden" id="streak">
+      <span class="st-ic" id="streakIc"></span>
+      <span class="st-n" id="streakN">0</span>
+      <span class="st-l">doğru üst üste</span>
+    </div>
+
+  <!-- HER KARTTAN SONRA ÇIKAN BİLDİRİM (oyunu engellemez) -->
+    <div class="flash hidden" id="flash">
+      <div class="flash-bot" id="flashBot">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <line x1="32" y1="6" x2="32" y2="13" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="32" cy="5" r="3.4" fill="currentColor"/>
+          <rect x="9" y="13" width="46" height="38" rx="13" fill="#fff" stroke="currentColor" stroke-width="3"/>
+          <rect x="14.5" y="19" width="35" height="21" rx="9" fill="currentColor"/>
+          <circle id="fbEyeL" cx="25" cy="29" r="3.6" fill="#fff"/>
+          <circle id="fbEyeR" cx="39" cy="29" r="3.6" fill="#fff"/>
+          <path id="fbMouth" d="M27 45 h10" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+          <line x1="9" y1="30" x2="4" y2="30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <line x1="55" y1="30" x2="60" y2="30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="flash-tx">
+        <div class="flash-title" id="flashTitle"></div>
+        <div class="flash-body" id="flashBody"></div>
+      </div>
     </div>
   </div>
 
@@ -789,7 +880,22 @@ let MODE = 'big';          // 'kid' = 10 yaş altı (sınavsız), 'big' = sınav
 let TARGET = 20;           // öğretilecek kart sayısı (moda göre belirlenir)
 let good=0, bad=0, taught=0, qi=0, youScore=0, yzScore=0, choice=null;
 let sound=true, voice=false;
-const $ = id => document.getElementById(id);
+/* Eleman bulunamazsa oyunu çökertmeyen güvenli erişim.
+   (Bir id kaldırıldığında geride kalan referans tüm betiği durdurmasın.) */
+const $ = id => {
+  const el = document.getElementById(id);
+  if(!el){
+    console.warn('Eleman bulunamadı:', id);
+    return new Proxy({}, {
+      get: (_,k) => (k==='classList') ? {add(){},remove(){},toggle(){},contains:()=>false}
+                  : (k==='style') ? {}
+                  : (typeof k==='string' && ['setAttribute','addEventListener','appendChild','prepend','remove','focus','click'].includes(k)) ? ()=>{}
+                  : '',
+      set: () => true
+    });
+  }
+  return el;
+};
 
 /* ============ AUDIO ============ */
 let ac=null;
@@ -830,12 +936,14 @@ function say(t, speak=true){
 }
 function mood(m){
   const b=$('bot'), mo=$('botMouth'), eL=$('eyeL'), eR=$('eyeR');
-  b.classList.remove('happy','confused','thinking');
+  b.classList.remove('happy','confused','thinking','sad');
   if(m==='happy'){ mo.setAttribute('d','M27 43 q5 5 10 0'); eL.setAttribute('r','2.6'); eR.setAttribute('r','2.6'); }
+  else if(m==='sad'){ mo.setAttribute('d','M27 47 q5 -5 10 0'); eL.setAttribute('r','3.2'); eR.setAttribute('r','3.2'); }
   else if(m==='confused'){ mo.setAttribute('d','M28 45 a2.5 2.5 0 1 0 5 0 a2.5 2.5 0 1 0 -5 0'); eL.setAttribute('r','4.2'); eR.setAttribute('r','3'); }
   else { mo.setAttribute('d','M27 45 h10'); eL.setAttribute('r','3.6'); eR.setAttribute('r','3.6'); }
-  if(m){ void b.offsetWidth; b.classList.add(m); }
+  if(m){ void b.offsetWidth; b.classList.add(m==='sad'?'confused':m); }
 }
+
 
 /* ============ ICON MOUNT ============ */
 $('sndBtn').innerHTML = ic('volume');
@@ -854,6 +962,7 @@ $('midIc').innerHTML = ic('check');
 $('railSickIc').innerHTML = ic('frown');
 $('railWellIc').innerHTML = ic('smile');
 $('brainIc').innerHTML = ic('brain');
+$('streakIc').innerHTML = ic('flame');
 $('goalIc').innerHTML = ic('target');
 $('examIc').innerHTML = ic('bot');
 $('youIc').innerHTML = ic('user');
@@ -892,6 +1001,7 @@ const play = $('play');
 let deck = shuffle([...TEACH]);
 let live = [], raf=null, spawnT=null, running=false, lastT=performance.now();
 
+
 /* Ölçüler önbellekte tutulur: sürükleme sırasında DOM okuması yapılmaz.
    (Her pointermove'da getBoundingClientRect/offsetWidth okumak reflow tetikleyip
    mobilde ciddi takılmaya yol açıyordu.) */
@@ -920,9 +1030,12 @@ function startGame(){
 }
 function loop(){
   if(!running) return;
+  clearTimeout(spawnT);
   let maxLive = window.innerWidth < 640 ? 2 : (window.innerWidth < 900 ? 3 : 4);
   if(MODE==='kid') maxLive = Math.min(maxLive, 2);
-  if(taught < TARGET && live.length < maxLive) spawn();
+  // tutulan kartlar sayıya dahil edilmez: takılı bir kart oyunu kilitleyemez
+  const falling = live.filter(o => !o.held).length;
+  if(taught < TARGET && falling < maxLive) spawn();
   const p = taught/TARGET;
   const gap = MODE==='kid' ? 2000 - p*400 : 1500 - p*700;
   spawnT = setTimeout(loop, Math.max(MODE==='kid'?1400:700, gap));
@@ -930,9 +1043,11 @@ function loop(){
 function spawn(){
   if(deck.length===0) deck = shuffle([...TEACH]);
   const c = deck.shift();
+  // ~6 kartta bir altın bonus kart (ilk 2 karttan sonra)
+  const isBonus = taught >= 2 && Math.random() < 0.17;
   const el = document.createElement('div');
-  el.className='card';
-  el.innerHTML = '<span class="pill p-'+c.d+'">'+DL[c.d]+'</span>'+
+  el.className = 'card' + (isBonus ? ' bonus' : '');
+  el.innerHTML = '<span class="pill p-'+c.d+'">'+(isBonus ? 'BONUS ×2' : DL[c.d])+'</span>'+
     '<div class="c-ic">'+ic(c.i)+'</div><div class="c-txt">'+c.t+'</div>';
   play.appendChild(el);
   if(!D.pw) measure();
@@ -942,7 +1057,7 @@ function spawn(){
   const p = taught/TARGET;
   // küçük yaşta daha yavaş ve hızlanmayan yağmur
   const base = MODE==='kid' ? 78 + p*22 : 110 + p*110;
-  const o = { el, c, w:cw, x: mn+Math.random()*Math.max(0,mx-mn), y:-chh-12,
+  const o = { el, c, bonus:isBonus, w:cw, x: mn+Math.random()*Math.max(0,mx-mn), y:-chh-12,
               vy: base + Math.random()*(MODE==='kid'?20:40), held:false, vx:0, lx:0, lt:0 };
   el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0)';
   live.push(o); grabify(o);
@@ -960,15 +1075,23 @@ function tick(now){
       if(Math.random()<.2) say('Bir kart kaçtı, olsun. O yine düşecek.', false);
     }
   }
+  // BEKÇİ: 6 sn boyunca kımıldamayan tutulu kart kendiliğinden bırakılır
+  for(const o of live){
+    if(o.held && now - (o.moveT || o.grabT || now) > 6000){
+      if(o.release) o.release();
+    }
+  }
   if(running) raf=requestAnimationFrame(tick);
 }
 function grabify(o){
   const el=o.el;
   el.addEventListener('pointerdown', e=>{
-    o.held=true; el.classList.add('held'); el.setPointerCapture(e.pointerId);
+    o.held=true; o.pid=e.pointerId; o.grabT=performance.now(); o.moveT=o.grabT;
+    el.classList.add('held');
+    try{ el.setPointerCapture(e.pointerId); }catch(_){}
     measure();                                  // sürükleme başında tek ölçüm
     o.gx=e.clientX-D.rect.left-o.x; o.gy=e.clientY-D.rect.top-o.y;
-    o.lx=e.clientX; o.lt=performance.now(); o.side=null; S.grab();
+    o.lx=e.clientX; o.lt=o.grabT; o.side=null; S.grab();
   });
   el.addEventListener('pointermove', e=>{
     if(!o.held) return;
@@ -976,7 +1099,7 @@ function grabify(o){
     el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0) rotate('+Math.max(-9,Math.min(9,o.vx*0.012))+'deg)';
     const t=performance.now(), dm=t-o.lt;
     if(dm>0) o.vx=(e.clientX-o.lx)/dm*1000;
-    o.lx=e.clientX; o.lt=t;
+    o.lx=e.clientX; o.lt=t; o.moveT=t;
     // sınıf değişimi yalnızca taraf DEĞİŞTİĞİNDE yapılır (her karede değil)
     const side = o.x < D.rail ? 'sick' : (o.x+o.w > D.pw-D.rail ? 'well' : null);
     if(side !== o.side){
@@ -989,7 +1112,10 @@ function grabify(o){
   }, { passive:true });
   const up=()=>{
     if(!o.held) return;
-    o.held=false; el.classList.remove('held');
+    o.held=false;
+    try{ if(o.pid!=null && el.hasPointerCapture(o.pid)) el.releasePointerCapture(o.pid); }catch(_){}
+    o.pid=null;
+    el.classList.remove('held');
     $('railSick').classList.remove('hot'); $('railWell').classList.remove('hot');
     let side=null;
     if(o.x<D.rail || o.vx<-650) side='sick';
@@ -1000,7 +1126,23 @@ function grabify(o){
   };
   el.addEventListener('pointerup',up);
   el.addEventListener('pointercancel',up);
+  el.addEventListener('lostpointercapture',up);   // yakalama kaybolursa da bırak
+  o.release = up;                                  // güvenlik ağı için dışarı aç
 }
+
+/* GÜVENLİK AĞI 1: pointerup oyun alanının dışında olursa kart takılı kalmasın */
+['pointerup','pointercancel'].forEach(ev =>
+  window.addEventListener(ev, () => {
+    live.forEach(o => { if(o.held && o.release) o.release(); });
+  })
+);
+/* GÜVENLİK AĞI 2: sekme arkaplana geçerse tüm kartları bırak */
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) live.forEach(o => { if(o.held && o.release) o.release(); });
+});
+window.addEventListener('blur', () => {
+  live.forEach(o => { if(o.held && o.release) o.release(); });
+});
 function fling(o, side){
   const i=live.indexOf(o); if(i>=0) live.splice(i,1);
   const el=o.el;
@@ -1009,35 +1151,153 @@ function fling(o, side){
   el.style.transform='translate3d('+tx+'px,'+(o.y+70)+'px,0) rotate('+(side==='sick'?-28:28)+'deg)';
   el.style.opacity='0';
   setTimeout(()=>el.remove(),440);
-  learn(o.c, side);
+  learn(o.c, side, o.bonus);
 }
-function learn(c, side){
-  if(side===c.k) good++; else bad++;
-  taught++;
+function learn(c, side, bonus){
+  const ok = (side===c.k);
+
+  // --- seri (kombo) takibi ---
+  if(ok){ streak++; if(streak>bestStreak) bestStreak=streak; }
+  else  { streak = 0; }
+  renderStreak();
+  const comboHit = ok && streak>0 && streak%3===0;   // 3, 6, 9...
+
+  // --- puanlama (bonus kart iki örnek sayılır) ---
+  const worth = (bonus && ok) ? 2 : 1;
+  if(ok) good += worth; else bad++;
+  taught += worth;
   const el=$(side==='well'?'wellN':'sickN');
   el.textContent = parseInt(el.textContent)+1;
+
   S.learn();
-  if(c.w){
-    if(side===c.k){ say('Doğru bildin. '+c.w); mood('happy'); }
-    else { say(pick1(PUZZLED)+' '+c.w+' Ama ben ne öğretirseniz onu öğrenirim.'); mood('confused'); S.no(); }
-    setTimeout(()=>mood(null),1300);
-  } else {
-    const r=Math.random();
-    let ex = r<.16 ? ' '+pick1(JOKES) : (r<.48 ? ' '+pick1(HAPPY) : '');
-    say('Öğrendim: '+c.t.toLowerCase()+' → '+(side==='well'?'sağlıklı':'hasta')+'.'+ex, false);
-    mood('happy'); setTimeout(()=>mood(null),500);
-  }
+  if(!ok) S.no();
+  if(comboHit) S.win();
+  else if(bonus && ok) S.ok();
   meter();
+
+  flash(c, side, ok, bonus, comboHit);
+  mood(ok ? 'happy' : 'sad');
+  setTimeout(()=>mood(null), ok ? 700 : 1400);
+
+  // Üst bar: kart bilgisini TEKRAR ETMEZ
+  say(comboHit ? comboLine() : chatter(ok), false);
+
+  if(comboHit) confetti(14);
   if(taught>=TARGET) finishTeach();
 }
+
+/* Seri göstergesi */
+let streak = 0, bestStreak = 0, streakTimer = null;
+function renderStreak(){
+  const el = $('streak');
+  if(streak < 2){                       // 2'den önce göstermeye değmez
+    el.classList.remove('show');
+    clearTimeout(streakTimer);
+    streakTimer = setTimeout(()=>el.classList.add('hidden'), 260);
+    return;
+  }
+  clearTimeout(streakTimer);
+  el.classList.remove('hidden');
+  $('streakN').textContent = streak;
+  void el.offsetWidth;
+  el.classList.add('show');
+  el.classList.remove('pump'); void el.offsetWidth; el.classList.add('pump');
+}
+/* Kombo anında robotun heyecanlı repliği */
+function comboLine(){
+  if(streak>=9) return 'Dokuz doğru! Sen tam bir yapay zekâ uzmanısın!';
+  if(streak>=6) return 'Altı doğru üst üste! Devrelerim ışıldıyor!';
+  return 'Üç doğru üst üste! Vay canına, çok iyisin!';
+}
+
+/* Üst bardaki sohbet: alttaki bildirimle asla aynı şeyi söylemez.
+   İlerleme, şaka ve yerel laflar arasında dönüşümlü ilerler. */
+function chatter(ok){
+  const left = TARGET - taught;
+  // dönüm noktaları önceliklidir
+  if(taught === 1) return 'İlk örneğimi aldım! Devam edelim.';
+  if(left === 0)   return 'Hepsini öğrendim, harikaydın!';
+  if(left === 1)   return 'Son bir kart kaldı, hazırım!';
+  if(left === 3)   return 'Üç kart kaldı, son düzlük!';
+  if(taught === Math.floor(TARGET/2)) return 'Yarıyı geçtik, beynim dolmaya başladı.';
+
+  if(!ok) return pick1(PUZZLED);
+
+  const r = Math.random();
+  if(r < 0.22) return pick1(JOKES);
+  if(r < 0.55) return pick1(HAPPY);
+  return 'Şu ana kadar ' + taught + ' örnek öğrendim.';
+}
+
+/* Her kartta çıkan, oyunu ENGELLEMEYEN bildirim. Kendiliğinden kaybolur. */
+let flashTimer=null, hideTimer=null;
+/* Bildirim ekranda kalma süresi (ms). Tek yerden ayarlanır. */
+const FLASH_MS      = 1100;   // normal kartlar
+const FLASH_MS_WHY  = 2600;   // açıklamalı (zor/tuzak) kartlar
+function flash(c, side, ok, bonus, comboHit){
+  const f = $('flash');
+  clearTimeout(flashTimer); clearTimeout(hideTimer);
+
+  f.classList.remove('hidden','good','bad','combo','gold');
+  if(comboHit)      f.classList.add('combo');
+  else if(bonus&&ok) f.classList.add('gold');
+  else              f.classList.add(ok ? 'good' : 'bad');
+
+  // robotun yüzü: doğruysa gülümser, yanlışsa üzülür
+  const mo=$('fbMouth'), eL=$('fbEyeL'), eR=$('fbEyeR');
+  if(ok){ mo.setAttribute('d','M26 43 q6 6 12 0'); eL.setAttribute('r','2.6'); eR.setAttribute('r','2.6'); }
+  else  { mo.setAttribute('d','M26 48 q6 -6 12 0'); eL.setAttribute('r','4');   eR.setAttribute('r','4'); }
+
+  const label = side==='well' ? 'SAĞLIKLI' : 'HASTA';
+  if(comboHit){
+    $('flashTitle').textContent = streak + ' doğru üst üste!';
+    $('flashBody').textContent = comboLine().replace(/^[^!]+! /,'') ||
+      'Arka arkaya doğru öğretiyorsun, çok hızlı öğreniyorum.';
+  } else if(bonus && ok){
+    $('flashTitle').textContent = 'Bonus kart! Çift örnek sayıldı.';
+    $('flashBody').textContent = 'Bu çok değerli bir örnekti — iki kart birden öğrenmiş gibi oldum.';
+  } else if(c.w){
+    // açıklamalı kart: neden'i de göster, daha uzun kalsın
+    $('flashTitle').textContent = ok
+      ? (c.d==='cokzor' ? 'Zor kartı bildin!' : 'Doğru öğrettin!')
+      : 'Yanlış öğrendim...';
+    $('flashBody').textContent = c.w;
+  } else {
+    $('flashTitle').textContent = ok ? 'Öğrendim!' : 'Yanlış öğrendim...';
+    $('flashBody').textContent = c.t + ' → ' + label +
+      (ok ? '' : '  ·  Sen ne öğretirsen ben onu öğrenirim.');
+  }
+
+  // animasyonları yeniden tetikle
+  const bot = $('flashBot');
+  bot.style.animation='none'; void bot.offsetWidth; bot.style.animation='';
+  void f.offsetWidth;
+  f.classList.add('show');
+
+  const dur = (comboHit || (bonus&&ok)) ? 1900 : (c.w ? FLASH_MS_WHY : FLASH_MS);
+  flashTimer = setTimeout(()=>{
+    f.classList.remove('show');
+    hideTimer = setTimeout(()=>f.classList.add('hidden'), 300);
+  }, dur);
+}
+
 function meter(){
   $('mVal').textContent = taught+' / '+TARGET;
   $('mFill').style.width = (taught/TARGET*100)+'%';
+}
+function hideFlash(){
+  clearTimeout(flashTimer); clearTimeout(hideTimer);
+  $('streak').classList.remove('show');
+  setTimeout(()=>$('streak').classList.add('hidden'), 260);
+  const f=$('flash');
+  f.classList.remove('show');
+  hideTimer = setTimeout(()=>f.classList.add('hidden'), 260);
 }
 function finishTeach(){
   if(!running) return;
   running=false; clearTimeout(spawnT); cancelAnimationFrame(raf);
   live.forEach(o=>o.el.remove()); live=[];
+  hideFlash();
 
   if(MODE === 'kid'){ celebrateKid(); return; }
 
@@ -1071,7 +1331,8 @@ function celebrateKid(){
   $('kidStats').innerHTML =
     '<div class="kid-stat"><div class="k-v">'+taught+'</div><div class="k-l">Öğretilen kart</div></div>' +
     '<div class="kid-stat"><div class="k-v">'+good+'</div><div class="k-l">Doğru öğretme</div></div>' +
-    '<div class="kid-stat"><div class="k-v">%'+pct+'</div><div class="k-l">Başarı</div></div>';
+    '<div class="kid-stat"><div class="k-v">%'+pct+'</div><div class="k-l">Başarı</div></div>' +
+    (bestStreak>=3 ? '<div class="kid-stat"><div class="k-v">'+bestStreak+'</div><div class="k-l">En uzun seri</div></div>' : '');
 
   say('Tebrikler! Sayende çok şey öğrendim. Sen gerçek bir yapay zekâ öğretmenisin!');
   mood('happy');
