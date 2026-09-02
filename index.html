@@ -587,7 +587,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.1</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.2</span></p>
 </div>
 
 <div class="stage">
@@ -832,7 +832,32 @@ const TEACH = [
   { i:'sun', t:'Göbeklitepe turunda çok yürüdü, ayakları yoruldu', k:'well', d:'cokzor',
     w:'Uzun yürüyüşten sonra yorulmak hastalık değildir; kaslar çalıştı demektir. Biraz dinlenmek yeterlidir.' },
   { i:'cat', t:'Kedinin yanına gidince hapşırmaya başlıyor', k:'sick', d:'cokzor',
-    w:'Bu bir alerjidir. Alerji gerçek bir sağlık durumudur ve doktora söylenmelidir.' }
+    w:'Bu bir alerjidir. Alerji gerçek bir sağlık durumudur ve doktora söylenmelidir.' },
+
+  /* --- ek kartlar (deste tekrarını önlemek için) --- */
+  { i:'apple', t:'Kahvaltısını yapmadan çıkmıyor', k:'well', d:'kolay' },
+  { i:'tooth', t:'Dişlerini günde iki kez fırçalıyor', k:'well', d:'kolay' },
+  { i:'nausea', t:'Karnı ağrıyor', k:'sick', d:'kolay' },
+  { i:'frown', t:'Boğazı ağrıyor, yutkunamıyor', k:'sick', d:'kolay' },
+
+  { i:'waves', t:'Her gün yürüyüş yapıyor', k:'well', d:'orta' },
+  { i:'bike', t:'Okula yürüyerek gidiyor', k:'well', d:'orta' },
+  { i:'dizzy', t:'Kulağı ağrıyor, duymakta zorlanıyor', k:'sick', d:'orta' },
+  { i:'bed', t:'Gece uyuyamadı, gözleri şiş', k:'sick', d:'orta' },
+
+  { i:'heart', t:'Spor sonrası kasları ağrıyor', k:'well', d:'zor',
+    w:'Spordan sonra kas ağrısı hastalık değildir; kaslar çalıştı ve güçleniyor demektir.' },
+  { i:'syringe', t:'Aşı olduktan sonra kolu bir gün hafif ağrıdı', k:'well', d:'zor',
+    w:'Aşıdan sonra kolun kısa süre ağrıması normaldir; vücut korunma kalkanını hazırlıyor.' },
+  { i:'shield', t:'İlacını doktorun söylediği saatte içiyor', k:'well', d:'zor',
+    w:'İlacı zamanında almak iyileşmeyi hızlandırır; bu sağlıklı bir davranıştır.' },
+  { i:'bandage', t:'Yeni ayakkabı topuğunu vurdu, su topladı', k:'sick', d:'zor',
+    w:'Su toplayan yara bakım ister: temiz tutulmalı ve patlatılmamalıdır.' },
+
+  { i:'droplet', t:'Buzlu su içince dişleri ürperdi', k:'well', d:'cokzor',
+    w:'Soğuk içecekte dişlerin ürpermesi anlık bir tepkidir, hastalık değildir.' },
+  { i:'laugh', t:'Uzun süre gülünce gözleri yaşardı', k:'well', d:'cokzor',
+    w:'Gülerken gözlerin yaşarması hastalık değildir; gözler kendini nemlendiriyor.' }
 ];
 const EXAM = shuffle([
   { i:'nausea', t:'Midesi bulanıyor', k:'sick', d:'kolay',
@@ -979,13 +1004,15 @@ function chooseMode(m){
   MODE = m;
   if(m === 'kid'){
     // Küçükler: çok zor kelime oyunları çıkarılır, 15 kart, daha sakin yağmur
-    deck = shuffle(TEACH.filter(c => c.d !== 'cokzor'));
+    pool = TEACH.filter(c => c.d !== 'cokzor');
+    seen = new Set(); deck = shuffle(pool);
     TARGET = 20;                       // küçük mod: ~17 kart
     $('step3').classList.add('hidden');
     $('lede').textContent = 'Yapay zekâ hiçbir şey bilmiyor. Kartları doğru tarafa atarak ona hasta ve sağlıklı durumları öğreteceksin!';
     $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Hepsini toplayınca kocaman bir sürpriz var!</span>';
   } else {
-    deck = shuffle([...TEACH]);
+    pool = [...TEACH];
+    seen = new Set(); deck = shuffle(pool);
     TARGET = 25;                       // büyük mod: ~21 kart
     $('step3').classList.remove('hidden');
     $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Altın bonus kartlar çift puan kazandırır!</span>';
@@ -1044,9 +1071,17 @@ function loop(){
   const gap = MODE==='kid' ? 2000 - p*400 : 1500 - p*700;
   spawnT = setTimeout(loop, Math.max(MODE==='kid'?1400:700, gap));
 }
+/* Aynı oyunda kart tekrarını önler: deste bitince önce HİÇ GÖSTERİLMEMİŞ
+   kartlarla doldurulur; hepsi gösterildiyse ancak o zaman baştan karılır. */
+let pool = [], seen = new Set();
+function refill(){
+  const unseen = pool.filter(c => !seen.has(c.t));
+  deck = shuffle(unseen.length ? unseen : pool);
+}
 function spawn(){
-  if(deck.length===0) deck = shuffle([...TEACH]);
+  if(deck.length===0) refill();
   const c = deck.shift();
+  seen.add(c.t);
   // ~6 kartta bir altın bonus kart (ilk 2 karttan sonra)
   const isBonus = taught >= 2 && Math.random() < 0.17;
   const el = document.createElement('div');
@@ -1077,7 +1112,9 @@ function tick(now){
     o.y += o.vy*dt;
     o.el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0)';
     if(o.y > ph+24){
-      o.el.remove(); live.splice(i,1); deck.push(o.c);
+      o.el.remove(); live.splice(i,1);
+      seen.delete(o.c.t);           // yakalanamadı: tekrar düşebilir
+      deck.push(o.c);
       if(Math.random()<.2) say('Bir kart kaçtı, olsun. O yine düşecek.', false);
     }
   }
