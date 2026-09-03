@@ -587,7 +587,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.2</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.4</span></p>
 </div>
 
 <div class="stage">
@@ -1062,14 +1062,14 @@ function startGame(){
 function loop(){
   if(!running) return;
   clearTimeout(spawnT);
-  let maxLive = window.innerWidth < 640 ? 2 : (window.innerWidth < 900 ? 3 : 4);
-  if(MODE==='kid') maxLive = Math.min(maxLive, 2);
+  let maxLive = window.innerWidth < 640 ? 2 : 3;
+  if(MODE==='kid') maxLive = 2;
   // tutulan kartlar sayıya dahil edilmez: takılı bir kart oyunu kilitleyemez
   const falling = live.filter(o => !o.held).length;
   if(taught < TARGET && falling < maxLive) spawn();
   const p = taught/TARGET;
-  const gap = MODE==='kid' ? 2000 - p*400 : 1500 - p*700;
-  spawnT = setTimeout(loop, Math.max(MODE==='kid'?1400:700, gap));
+  const gap = MODE==='kid' ? 2900 - p*400 : 2300 - p*600;
+  spawnT = setTimeout(loop, Math.max(MODE==='kid'?2400:1650, gap));
 }
 /* Aynı oyunda kart tekrarını önler: deste bitince önce HİÇ GÖSTERİLMEMİŞ
    kartlarla doldurulur; hepsi gösterildiyse ancak o zaman baştan karılır. */
@@ -1096,10 +1096,13 @@ function spawn(){
   let mn=D.rail+14, mx=D.pw-D.rail-cw-14;
   if(mx<mn) mn=mx=Math.max(8,(D.pw-cw)/2);
   const p = taught/TARGET;
-  // küçük yaşta daha yavaş ve hızlanmayan yağmur
-  const base = MODE==='kid' ? 78 + p*22 : 110 + p*110;
+  /* Düşme hızı: çocuk kartı OKUYUP, DÜŞÜNÜP, sonra atabilmeli.
+     Hızlanma çok hafif tutuldu; uzun/tuzak kartlar daha da yavaş düşer. */
+  let base = MODE==='kid' ? 56 + p*12 : 72 + p*33;
+  if(c.w) base *= 0.8;                       // açıklamalı (düşündüren) kartlar
+  if(c.t.length > 34) base *= 0.85;          // uzun metinli kartlar
   const o = { el, c, bonus:isBonus, w:cw, x: mn+Math.random()*Math.max(0,mx-mn), y:-chh-12,
-              vy: base + Math.random()*(MODE==='kid'?20:40), held:false, vx:0, lx:0, lt:0 };
+              vy: base + Math.random()*(MODE==='kid'?10:16), held:false, vx:0, lx:0, lt:0 };
   el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0)';
   live.push(o); grabify(o);
 }
@@ -1118,9 +1121,13 @@ function tick(now){
       if(Math.random()<.2) say('Bir kart kaçtı, olsun. O yine düşecek.', false);
     }
   }
-  // BEKÇİ: 6 sn boyunca kımıldamayan tutulu kart kendiliğinden bırakılır
+  /* BEKÇİ: yalnızca GERÇEKTEN takılı kalmış kartlar için.
+     Çocuk kartı tutup düşünürken devreye girmemeli, bu yüzden süre uzun
+     tutuldu ve parmak kalkmışsa (o.down false) hemen serbest bırakılır. */
   for(const o of live){
-    if(o.held && now - (o.moveT || o.grabT || now) > 6000){
+    if(!o.held) continue;
+    if(!o.down){ if(o.release) o.release(); continue; }      // parmak zaten kalkmış
+    if(now - (o.moveT || o.grabT || now) > 25000){           // 25 sn: kesin takılma
       if(o.release) o.release();
     }
   }
@@ -1129,7 +1136,8 @@ function tick(now){
 function grabify(o){
   const el=o.el;
   el.addEventListener('pointerdown', e=>{
-    o.held=true; o.pid=e.pointerId; o.grabT=performance.now(); o.moveT=o.grabT;
+    o.held=true; o.down=true; o.pid=e.pointerId;
+    o.grabT=performance.now(); o.moveT=o.grabT;
     el.classList.add('held');
     try{ el.setPointerCapture(e.pointerId); }catch(_){}
     measure();                                  // sürükleme başında tek ölçüm
@@ -1137,7 +1145,13 @@ function grabify(o){
     o.lx=e.clientX; o.lt=o.grabT; o.side=null; S.grab();
   });
   el.addEventListener('pointermove', e=>{
-    if(!o.held) return;
+    if(!o.held){
+      // bekçi bırakmış ama parmak hâlâ ekranda: kartı tekrar eline ver
+      if(o.down && o.pid===e.pointerId){
+        o.held=true; el.classList.add('held');
+        o.gx=e.clientX-D.rect.left-o.x; o.gy=e.clientY-D.rect.top-o.y;
+      } else return;
+    }
     o.x=e.clientX-D.rect.left-o.gx; o.y=e.clientY-D.rect.top-o.gy;
     el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0) rotate('+Math.max(-9,Math.min(9,o.vx*0.012))+'deg)';
     const t=performance.now(), dm=t-o.lt;
@@ -1154,6 +1168,7 @@ function grabify(o){
     }
   }, { passive:true });
   const up=()=>{
+    o.down=false;
     if(!o.held) return;
     o.held=false;
     try{ if(o.pid!=null && el.hasPointerCapture(o.pid)) el.releasePointerCapture(o.pid); }catch(_){}
@@ -1176,7 +1191,7 @@ function grabify(o){
 /* GÜVENLİK AĞI 1: pointerup oyun alanının dışında olursa kart takılı kalmasın */
 ['pointerup','pointercancel'].forEach(ev =>
   window.addEventListener(ev, () => {
-    live.forEach(o => { if(o.held && o.release) o.release(); });
+    live.forEach(o => { o.down=false; if(o.held && o.release) o.release(); });
   })
 );
 /* GÜVENLİK AĞI 2: sekme arkaplana geçerse tüm kartları bırak */
