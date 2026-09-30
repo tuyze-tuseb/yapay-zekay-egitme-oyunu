@@ -590,7 +590,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.8</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.9</span></p>
 </div>
 
 <div class="stage">
@@ -700,7 +700,7 @@
     </div>
     <div class="panel">
       <div class="p-ic" id="goalIc"></div>
-      <div class="p-tx" id="goalTx"><b>Hedef: 14 puan</b><span>Kolaydan çok zora — kelime oyunlarına dikkat.</span></div>
+      <div class="p-tx" id="goalTx"><b>Hedef: 15 puan</b><span>Kolaydan çok zora — kelime oyunlarına dikkat.</span></div>
     </div>
   </div>
 </div>
@@ -862,25 +862,20 @@ const TEACH = [
   { i:'laugh', t:'Uzun süre gülünce gözleri yaşardı', k:'well', d:'cokzor',
     w:'Gülerken gözlerin yaşarması hastalık değildir; gözler kendini nemlendiriyor.' }
 ];
-/* SINAV — 6 soru. Her biri FARKLI bir kavramı ölçer, bu yüzden yapay zekânın
-   gerçekten öğrenip öğrenmediğini ayırt edici biçimde sınar. */
+/* SINAV — 4 soru. Her biri FARKLI bir kavramı ölçer ve biri hariç hepsi
+   "düşündüren" sorudur; böylece az soruyla ayırt edici bir ölçüm yapılır.
+   Denge: 2 hasta / 2 sağlıklı. */
 const EXAM = shuffle([
-  // 1) Temel belirti: hasta tarafının en net örneği
+  // 1) Temel belirti — yapay zekâ en basit örneği tanıyor mu?
   { i:'nausea', t:'Midesi bulanıyor, kendini kötü hissediyor', k:'sick', d:'kolay',
     w:'Mide bulantısı, vücudun bir şeylerin yolunda olmadığını söyleme biçimidir.' },
-  // 2) Temel sağlıklı alışkanlık
-  { i:'bike', t:'Her gün Dicle kenarında bisiklet sürüyor', k:'well', d:'kolay',
-    w:'Düzenli hareket kalbi ve kasları güçlendirir; bu sağlıklı bir alışkanlıktır.' },
-  // 3) Sebep → sonuç: davranışın hastalığa yol açması
+  // 2) Sebep → sonuç: davranış hastalığa yol açıyor
   { i:'cloudrain', t:'Kışın saçları ıslak dışarı çıktı, burnu akmaya başladı', k:'sick', d:'zor',
     w:'Soğukta ıslak saçla gezmek vücudu üşütebilir; akan burun bunun işaretidir.' },
-  // 4) Korunma = sağlık (hastalık belirtisi yokken yapılan doğru davranış)
+  // 3) Korunma = sağlık: belirti yokken yapılan doğru davranış
   { i:'umbrella', t:'Güneşe çıkmadan önce güneş kremi sürüyor', k:'well', d:'zor',
     w:'Güneş kremi cildi korur. Hasta olmadan önlem almak sağlıklı bir davranıştır.' },
-  // 5) Alışkanlığın zararı (belirti sonradan çıkar)
-  { i:'phone', t:'Gece boyu ekrana baktı, gözleri kızardı ve başı ağrıyor', k:'sick', d:'zor',
-    w:'Çok ekran gözleri yorar ve baş ağrıtır; bu bir sağlık sorunudur.' },
-  // 6) Normal beden tepkisi ≠ hastalık (kelime oyunu)
+  // 4) Normal beden tepkisi ≠ hastalık (kelime oyunu)
   { i:'laugh', t:'Arkadaşıyla gülmekten karnı ağrıdı', k:'well', d:'cokzor',
     w:'Gülmekten karnın ağrıması hastalık değildir; kahkaha kasları çalıştırır ve sağlığa iyi gelir.' }
 ]);
@@ -908,7 +903,7 @@ const pick1 = a => a[Math.floor(Math.random()*a.length)];
 let MODE = 'big';          // 'kid' = 10 yaş altı (sınavsız), 'big' = sınavlı
 /* Hedef = toplanacak PUAN. Normal kart 1 puan; özel kartlar 2 veya 3 puan.
    Özel kartlar rastgele değil, PLANLI dağıtılır (bkz. specials). */
-let TARGET = 14;
+let TARGET = 15;
 let specials = [];          // o oyunda dağıtılacak özel kart değerleri
 let good=0, bad=0, taught=0, qi=0, youScore=0, yzScore=0, choice=null;
 let sound=true, voice=false;
@@ -1018,7 +1013,7 @@ function chooseMode(m){
   } else {
     pool = [...TEACH];
     seen = new Set(); spawnIdx = 0; deck = shuffle(pool);
-    TARGET = 14;                       // büyük mod: ~10 kart
+    TARGET = 15;                       // büyük mod: ~10 kart
     specials = shuffle([3,3,2,2,2]);   // 2 tane ×3, 3 tane ×2
     $('step3').classList.remove('hidden');
     $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Altın kartlar ×2, özel kartlar ×3 puan!</span>';
