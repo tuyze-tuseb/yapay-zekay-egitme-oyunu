@@ -36,20 +36,19 @@
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
     color: var(--ink);
-    background: var(--bg);
+    /* Statik degrade: bulanıklık/animasyon yok, GPU maliyeti sıfır */
+    background:
+      radial-gradient(58vw 46vh at 6% 0%,   #DCEBF7 0%, transparent 60%),
+      radial-gradient(50vw 42vh at 98% 100%, #DCF0E7 0%, transparent 60%),
+      radial-gradient(40vw 34vh at 28% 104%, #F4E9D2 0%, transparent 58%),
+      var(--bg);
+    background-attachment: fixed;
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
     letter-spacing: -.01em;
   }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
-
-  .aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .aurora i {
-    position: absolute; border-radius: 50%; filter: blur(90px); opacity: .5;
-    animation: drift 18s ease-in-out infinite;
-  }
-  @keyframes drift { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-28px) scale(1.08)} }
 
   svg.ic { width: 1em; height: 1em; display: block; stroke: currentColor; fill: none;
            stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
@@ -151,6 +150,7 @@
          letter-spacing: .04em; }
   /* ---------- PLAY ---------- */
   .play { position: relative; flex: 1; min-height: 0; display: none; overflow: hidden;
+          contain: layout paint;            /* boyama bu kutunun dışına taşmaz */
           background: var(--surface); border: 1px solid var(--line);
           border-radius: var(--r-lg); box-shadow: var(--sh-1); }
   .play.active { display: block; }
@@ -179,7 +179,8 @@
           background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md);
           box-shadow: var(--sh-2); padding: clamp(14px,2vh,20px) 14px clamp(12px,1.7vh,16px);
           text-align: center; user-select: none; touch-action: none; cursor: grab;
-          will-change: transform; transition: border-color .2s, box-shadow .2s; }
+          will-change: transform; backface-visibility: hidden;
+          transition: border-color .2s, box-shadow .2s; }
   .card:active { cursor: grabbing; }
   .card.held { box-shadow: var(--sh-3); z-index: 10; border-color: var(--cyan-soft); }
   .card .c-ic { width: clamp(60px,8.2vh,80px); height: clamp(60px,8.2vh,80px); margin: 0 auto 11px;
@@ -331,10 +332,20 @@
                 box-shadow: 0 0 0 4px rgba(227,179,65,.18), var(--sh-2); }
   .card.bonus .c-ic { background: #FBEFCB; color: #A97C15; }
   .card.bonus .pill { background: linear-gradient(90deg,#E3B341,#F2CE72); color: #5A4208; }
+  /* ×3 kart: daha zengin, mor-altın karışımı */
+  .card.bonus3 { border-color: #C79A2E;
+                 background: linear-gradient(155deg,#FFFDF3,#FFF0C6 55%,#F6E4FF);
+                 box-shadow: 0 0 0 5px rgba(199,154,46,.22), var(--sh-2); }
+  .card.bonus3 .pill { background: linear-gradient(90deg,#C79A2E,#E3B341 60%,#9B7BD4); color: #fff; }
+  .card.bonus3 .c-ic { background: #F7EBD2; color: #8A6410; }
+  .card.bonus3::after { box-shadow: 0 0 22px rgba(199,154,46,.7); }
+  /* Parlama: box-shadow her karede yeniden boyanmasın diye sabit;
+     yalnızca opacity canlandırılır (GPU'da ucuz) + kendi katmanında. */
   .card.bonus::after { content: ''; position: absolute; inset: -3px; border-radius: inherit;
-                       pointer-events: none; box-shadow: 0 0 18px rgba(227,179,65,.55);
-                       animation: shine 1.5s ease-in-out infinite; }
-  @keyframes shine { 0%,100%{opacity:.35} 50%{opacity:.9} }
+                       pointer-events: none; box-shadow: 0 0 16px rgba(227,179,65,.6);
+                       opacity: .5; will-change: opacity;
+                       animation: shine 1.8s ease-in-out infinite; }
+  @keyframes shine { 0%,100%{opacity:.4} 50%{opacity:.85} }
 
   /* ---------- Seri (kombo) göstergesi ---------- */
   .streak { position: absolute; top: clamp(10px,2vh,20px); left: 50%;
@@ -355,6 +366,7 @@
   /* kombo ve bonus bildirimi renkleri */
   .flash.combo { border-color: #FF8A45; color: #D2551F; background: #FFF7F1; }
   .flash.gold  { border-color: #E3B341; color: #A97C15; background: #FFFCF2; }
+  .flash.gold3 { border-color: #C79A2E; color: #8A6410; background: #FFFAEC; }
 
   /* ---------- Kart bildirimi (oyunu engellemez) ---------- */
   .flash {
@@ -504,11 +516,7 @@
   @media (max-width: 860px), (pointer: coarse) {
     /* 90px bulanıklık + sonsuz animasyon mobil GPU'yu çok yoruyordu:
        yerine statik degrade zemin kullanılıyor. */
-    .aurora { display: none; }
-    body { background:
-      radial-gradient(60vw 44vh at 8% 2%,  #DCEBF7 0%, transparent 62%),
-      radial-gradient(52vw 40vh at 96% 96%, #DCF0E7 0%, transparent 62%),
-      var(--bg); }
+
     /* backdrop-filter mobilde çok pahalı */
     .ov { backdrop-filter: none; background: rgba(245,249,252,.985); }
     /* düşen kartların gölgesi sadeleşti (sürekli hareket eden katman) */
@@ -545,11 +553,6 @@
 </head>
 <body>
 
-<div class="aurora">
-  <i style="width:420px;height:420px;background:#BBDDF0;top:-120px;left:-100px;"></i>
-  <i style="width:340px;height:340px;background:#C6E9DA;bottom:-110px;right:-80px;animation-delay:5s;"></i>
-  <i style="width:280px;height:280px;background:#F2E3C4;bottom:-90px;left:26%;animation-delay:9s;"></i>
-</div>
 
 <!-- ================= START ================= -->
 <div class="start" id="startScreen">
@@ -576,10 +579,10 @@
 
   <!-- B) NASIL OYNANIR -->
   <div id="howStep" class="hidden">
-    <p class="lede" id="lede">Yapay zekâ hiçbir şey bilmeden doğar. Ona örnekler göstererek hasta ve sağlıklı durumları ayırt etmeyi öğreteceksin.</p>
+    <p class="lede" id="lede">Yapay zekâ ilk yapıldığında bomboş bir defter gibidir; hiçbir şey bilmez. Ona örnekler göstererek hasta ve sağlıklı durumları ayırt etmeyi öğreteceksin.</p>
     <div class="steps">
       <div class="step"><span class="num">01</span><div class="badge-ic" id="s1"></div><div class="step-tx"><b>Kartlar düşüyor</b><p>Sağlık durumu kartları yukarıdan süzülerek iner. Düşen kartı parmağınla yakala.</p></div></div>
-      <div class="step"><span class="num">02</span><div class="badge-ic" id="s2"></div><div class="step-tx"><b>Sola veya sağa</b><p>Hasta ise sola, sağlıklı ise sağa fırlat. Altın kartlar çift puan kazandırır!</p></div></div>
+      <div class="step"><span class="num">02</span><div class="badge-ic" id="s2"></div><div class="step-tx"><b>Sola veya sağa</b><p>Hasta ise sola, sağlıklı ise sağa fırlat. Altın kartlar ×2, ×3 puan kazandırır!</p></div></div>
       <div class="step" id="step3"><span class="num">03</span><div class="badge-ic" id="s3"></div><div class="step-tx"><b>Sınav zamanı</b><p>Hiç görülmemiş kartlar gelir. Önce sen tahmin et, sonra yapay zekânın cevabını gör.</p></div></div>
     </div>
     <div class="rotate-tip"><span id="rotIc"></span> Telefonu yan çevirirsen oyun daha rahat oynanır</div>
@@ -587,7 +590,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.4</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.8</span></p>
 </div>
 
 <div class="stage">
@@ -697,7 +700,7 @@
     </div>
     <div class="panel">
       <div class="p-ic" id="goalIc"></div>
-      <div class="p-tx" id="goalTx"><b>Hedef: 25 puan</b><span>Kolaydan çok zora — kelime oyunlarına dikkat.</span></div>
+      <div class="p-tx" id="goalTx"><b>Hedef: 14 puan</b><span>Kolaydan çok zora — kelime oyunlarına dikkat.</span></div>
     </div>
   </div>
 </div>
@@ -859,27 +862,27 @@ const TEACH = [
   { i:'laugh', t:'Uzun süre gülünce gözleri yaşardı', k:'well', d:'cokzor',
     w:'Gülerken gözlerin yaşarması hastalık değildir; gözler kendini nemlendiriyor.' }
 ];
+/* SINAV — 6 soru. Her biri FARKLI bir kavramı ölçer, bu yüzden yapay zekânın
+   gerçekten öğrenip öğrenmediğini ayırt edici biçimde sınar. */
 const EXAM = shuffle([
-  { i:'nausea', t:'Midesi bulanıyor', k:'sick', d:'kolay',
+  // 1) Temel belirti: hasta tarafının en net örneği
+  { i:'nausea', t:'Midesi bulanıyor, kendini kötü hissediyor', k:'sick', d:'kolay',
     w:'Mide bulantısı, vücudun bir şeylerin yolunda olmadığını söyleme biçimidir.' },
-  { i:'bike', t:'Dicle kenarında bisiklet sürüyor', k:'well', d:'kolay',
-    w:'Hareket etmek kalbimizi ve kaslarımızı güçlendirir.' },
-  { i:'apple', t:'Meyve tabağını bitiriyor', k:'well', d:'kolay',
-    w:'Meyveler vitamin deposudur; vücudun savunmasını güçlendirir.' },
-  { i:'dizzy', t:'Başı dönüyor', k:'sick', d:'orta',
-    w:'Baş dönmesi dinlenmeyi ve bir büyüğe haber vermeyi gerektiren bir belirtidir.' },
-  { i:'waves', t:'Yüzme havuzunda yüzüyor', k:'well', d:'orta',
-    w:'Yüzmek tüm vücudu çalıştıran çok iyi bir spordur.' },
-  { i:'umbrella', t:'Güneşe çıkmadan güneş kremi sürüyor', k:'well', d:'zor',
-    w:'Güneş kremi cildi korur. Korunmak sağlıklı bir davranıştır.' },
-  { i:'phone', t:'Gece boyu ekrana baktı, gözleri kızardı', k:'sick', d:'zor',
-    w:'Çok ekran gözleri yorar. Kızarmış ve yorgun gözler bir sağlık sorunudur.' },
+  // 2) Temel sağlıklı alışkanlık
+  { i:'bike', t:'Her gün Dicle kenarında bisiklet sürüyor', k:'well', d:'kolay',
+    w:'Düzenli hareket kalbi ve kasları güçlendirir; bu sağlıklı bir alışkanlıktır.' },
+  // 3) Sebep → sonuç: davranışın hastalığa yol açması
   { i:'cloudrain', t:'Kışın saçları ıslak dışarı çıktı, burnu akmaya başladı', k:'sick', d:'zor',
     w:'Soğukta ıslak saçla gezmek vücudu üşütebilir; akan burun bunun işaretidir.' },
-  { i:'flame', t:'Acılı çiğ köfteden sonra arka arkaya üç ayran içti', k:'well', d:'cokzor',
-    w:'Acı ağzı yakar ama kimseyi hasta etmez; ayran da serinletir. Bu sadece acının oyunu.' },
+  // 4) Korunma = sağlık (hastalık belirtisi yokken yapılan doğru davranış)
+  { i:'umbrella', t:'Güneşe çıkmadan önce güneş kremi sürüyor', k:'well', d:'zor',
+    w:'Güneş kremi cildi korur. Hasta olmadan önlem almak sağlıklı bir davranıştır.' },
+  // 5) Alışkanlığın zararı (belirti sonradan çıkar)
+  { i:'phone', t:'Gece boyu ekrana baktı, gözleri kızardı ve başı ağrıyor', k:'sick', d:'zor',
+    w:'Çok ekran gözleri yorar ve baş ağrıtır; bu bir sağlık sorunudur.' },
+  // 6) Normal beden tepkisi ≠ hastalık (kelime oyunu)
   { i:'laugh', t:'Arkadaşıyla gülmekten karnı ağrıdı', k:'well', d:'cokzor',
-    w:'Gülmekten karnın ağrıması hastalık değildir; kahkaha kasları çalıştırır. Gülmek sağlığa iyi gelir.' }
+    w:'Gülmekten karnın ağrıması hastalık değildir; kahkaha kasları çalıştırır ve sağlığa iyi gelir.' }
 ]);
 function shuffle(a){ return [...a].sort(()=>Math.random()-0.5); }
 const DL = { kolay:'Kolay', orta:'Orta', zor:'Zor', cokzor:'Çok Zor' };
@@ -903,9 +906,10 @@ const pick1 = a => a[Math.floor(Math.random()*a.length)];
 
 /* ============ STATE ============ */
 let MODE = 'big';          // 'kid' = 10 yaş altı (sınavsız), 'big' = sınavlı
-/* Hedef = toplanacak PUAN. Normal kart 1, altın bonus kart 2 puan.
-   (25 puan ≈ 21 kart, 20 puan ≈ 17 kart sürükleme demektir.) */
-let TARGET = 25;
+/* Hedef = toplanacak PUAN. Normal kart 1 puan; özel kartlar 2 veya 3 puan.
+   Özel kartlar rastgele değil, PLANLI dağıtılır (bkz. specials). */
+let TARGET = 14;
+let specials = [];          // o oyunda dağıtılacak özel kart değerleri
 let good=0, bad=0, taught=0, qi=0, youScore=0, yzScore=0, choice=null;
 let sound=true, voice=false;
 /* Eleman bulunamazsa oyunu çökertmeyen güvenli erişim.
@@ -1005,17 +1009,19 @@ function chooseMode(m){
   if(m === 'kid'){
     // Küçükler: çok zor kelime oyunları çıkarılır, 15 kart, daha sakin yağmur
     pool = TEACH.filter(c => c.d !== 'cokzor');
-    seen = new Set(); deck = shuffle(pool);
-    TARGET = 20;                       // küçük mod: ~17 kart
+    seen = new Set(); spawnIdx = 0; deck = shuffle(pool);
+    TARGET = 12;                       // küçük mod: ~10 kart
+    specials = shuffle([3,2,2]);       // küçükte 1 tane ×3, 2 tane ×2
     $('step3').classList.add('hidden');
-    $('lede').textContent = 'Yapay zekâ hiçbir şey bilmiyor. Kartları doğru tarafa atarak ona hasta ve sağlıklı durumları öğreteceksin!';
+    $('lede').textContent = 'Yapay zekâ bomboş bir defter gibi, hiçbir şey bilmiyor. Kartları doğru tarafa atarak ona hasta ve sağlıklı durumları öğreteceksin!';
     $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Hepsini toplayınca kocaman bir sürpriz var!</span>';
   } else {
     pool = [...TEACH];
-    seen = new Set(); deck = shuffle(pool);
-    TARGET = 25;                       // büyük mod: ~21 kart
+    seen = new Set(); spawnIdx = 0; deck = shuffle(pool);
+    TARGET = 14;                       // büyük mod: ~10 kart
+    specials = shuffle([3,3,2,2,2]);   // 2 tane ×3, 3 tane ×2
     $('step3').classList.remove('hidden');
-    $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Altın bonus kartlar çift puan kazandırır!</span>';
+    $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Altın kartlar ×2, özel kartlar ×3 puan!</span>';
   }
   $('mVal').textContent = '0 / ' + TARGET;
   $('ageStep').classList.add('hidden');
@@ -1073,7 +1079,7 @@ function loop(){
 }
 /* Aynı oyunda kart tekrarını önler: deste bitince önce HİÇ GÖSTERİLMEMİŞ
    kartlarla doldurulur; hepsi gösterildiyse ancak o zaman baştan karılır. */
-let pool = [], seen = new Set();
+let pool = [], seen = new Set(), spawnIdx = 0;
 function refill(){
   const unseen = pool.filter(c => !seen.has(c.t));
   deck = shuffle(unseen.length ? unseen : pool);
@@ -1082,11 +1088,18 @@ function spawn(){
   if(deck.length===0) refill();
   const c = deck.shift();
   seen.add(c.t);
-  // ~6 kartta bir altın bonus kart (ilk 2 karttan sonra)
-  const isBonus = taught >= 2 && Math.random() < 0.17;
+  /* Özel kart dağıtımı: plandaki kartlar oyuna yayılarak verilir.
+     Hedefe yaklaştıkça kalan özel kartların çıkma olasılığı artar. */
+  let val = 1;
+  if(specials.length && spawnIdx >= 1){
+    const kalanPuan = Math.max(1, TARGET - taught);
+    const tahminiKart = Math.max(1, Math.ceil(kalanPuan / 1.6));
+    if(Math.random() < specials.length / tahminiKart) val = specials.shift();
+  }
+  spawnIdx++;
   const el = document.createElement('div');
-  el.className = 'card' + (isBonus ? ' bonus' : '');
-  el.innerHTML = '<span class="pill p-'+c.d+'">'+(isBonus ? 'BONUS ×2' : DL[c.d])+'</span>'+
+  el.className = 'card' + (val===3 ? ' bonus bonus3' : val===2 ? ' bonus' : '');
+  el.innerHTML = '<span class="pill p-'+c.d+'">'+(val>1 ? 'BONUS ×'+val : DL[c.d])+'</span>'+
     '<div class="c-ic">'+ic(c.i)+'</div><div class="c-txt">'+c.t+'</div>';
   play.appendChild(el);
   if(!D.pw) measure();
@@ -1101,7 +1114,7 @@ function spawn(){
   let base = MODE==='kid' ? 56 + p*12 : 72 + p*33;
   if(c.w) base *= 0.8;                       // açıklamalı (düşündüren) kartlar
   if(c.t.length > 34) base *= 0.85;          // uzun metinli kartlar
-  const o = { el, c, bonus:isBonus, w:cw, x: mn+Math.random()*Math.max(0,mx-mn), y:-chh-12,
+  const o = { el, c, bonus:(val>1), val:val, w:cw, x: mn+Math.random()*Math.max(0,mx-mn), y:-chh-12,
               vy: base + Math.random()*(MODE==='kid'?10:16), held:false, vx:0, lx:0, lt:0 };
   el.style.transform='translate3d('+o.x+'px,'+o.y+'px,0)';
   live.push(o); grabify(o);
@@ -1209,9 +1222,11 @@ function fling(o, side){
   el.style.transform='translate3d('+tx+'px,'+(o.y+70)+'px,0) rotate('+(side==='sick'?-28:28)+'deg)';
   el.style.opacity='0';
   setTimeout(()=>el.remove(),440);
-  learn(o.c, side, o.bonus);
+  learn(o.c, side, o.val || 1);
 }
-function learn(c, side, bonus){
+function learn(c, side, val){
+  val = val || 1;
+  const bonus = val > 1;
   const ok = (side===c.k);
 
   // --- seri (kombo) takibi ---
@@ -1220,8 +1235,8 @@ function learn(c, side, bonus){
   renderStreak();
   const comboHit = ok && streak>0 && streak%3===0;   // 3, 6, 9...
 
-  // --- puanlama (bonus kart iki örnek sayılır) ---
-  const worth = (bonus && ok) ? 2 : 1;
+  // --- puanlama: özel kart yalnızca DOĞRU atılırsa tam değerini verir ---
+  const worth = ok ? val : 1;
   if(ok) good += worth; else bad++;
   taught += worth;
   const el=$(side==='well'?'wellN':'sickN');
@@ -1233,14 +1248,14 @@ function learn(c, side, bonus){
   else if(bonus && ok) S.ok();
   meter();
 
-  flash(c, side, ok, bonus, comboHit);
+  flash(c, side, ok, val, comboHit);
   mood(ok ? 'happy' : 'sad');
   setTimeout(()=>mood(null), ok ? 700 : 1400);
 
   // Üst bar: kart bilgisini TEKRAR ETMEZ
   say(comboHit ? comboLine() : chatter(ok), false);
 
-  if(comboHit) confetti(14);
+  if(comboHit) confetti(10);
   if(taught>=TARGET) finishTeach();
 }
 
@@ -1292,13 +1307,14 @@ let flashTimer=null, hideTimer=null;
 /* Bildirim ekranda kalma süresi (ms). Tek yerden ayarlanır. */
 const FLASH_MS      = 1100;   // normal kartlar
 const FLASH_MS_WHY  = 2600;   // açıklamalı (zor/tuzak) kartlar
-function flash(c, side, ok, bonus, comboHit){
+function flash(c, side, ok, val, comboHit){
+  const bonus = (val||1) > 1;
   const f = $('flash');
   clearTimeout(flashTimer); clearTimeout(hideTimer);
 
-  f.classList.remove('hidden','good','bad','combo','gold');
+  f.classList.remove('hidden','good','bad','combo','gold','gold3');
   if(comboHit)      f.classList.add('combo');
-  else if(bonus&&ok) f.classList.add('gold');
+  else if(bonus&&ok) f.classList.add(val===3 ? 'gold3' : 'gold');
   else              f.classList.add(ok ? 'good' : 'bad');
 
   // robotun yüzü: doğruysa gülümser, yanlışsa üzülür
@@ -1312,8 +1328,10 @@ function flash(c, side, ok, bonus, comboHit){
     $('flashBody').textContent = comboLine().replace(/^[^!]+! /,'') ||
       'Arka arkaya doğru öğretiyorsun, çok hızlı öğreniyorum.';
   } else if(bonus && ok){
-    $('flashTitle').textContent = 'Bonus kart! Çift puan.';
-    $('flashBody').textContent = 'Bu çok değerli bir örnekti — iki kart birden öğrenmiş gibi oldum.';
+    $('flashTitle').textContent = 'Bonus kart! ×' + val + ' puan.';
+    $('flashBody').textContent = val === 3
+      ? 'Altın kart! Bu örnek üç kart değerindeydi, bir anda çok şey öğrendim.'
+      : 'Bu çok değerli bir örnekti — iki kart birden öğrenmiş gibi oldum.';
   } else if(c.w){
     // açıklamalı kart: neden'i de göster, daha uzun kalsın
     $('flashTitle').textContent = ok
