@@ -590,7 +590,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v3.9</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v4.2</span></p>
 </div>
 
 <div class="stage">
@@ -700,7 +700,7 @@
     </div>
     <div class="panel">
       <div class="p-ic" id="goalIc"></div>
-      <div class="p-tx" id="goalTx"><b>Hedef: 15 puan</b><span>Kolaydan çok zora — kelime oyunlarına dikkat.</span></div>
+      <div class="p-tx" id="goalTx"><b>Hedef: 14 puan</b><span>Kolaydan çok zora — kelime oyunlarına dikkat.</span></div>
     </div>
   </div>
 </div>
@@ -860,25 +860,73 @@ const TEACH = [
   { i:'droplet', t:'Buzlu su içince dişleri ürperdi', k:'well', d:'cokzor',
     w:'Soğuk içecekte dişlerin ürpermesi anlık bir tepkidir, hastalık değildir.' },
   { i:'laugh', t:'Uzun süre gülünce gözleri yaşardı', k:'well', d:'cokzor',
-    w:'Gülerken gözlerin yaşarması hastalık değildir; gözler kendini nemlendiriyor.' }
+    w:'Gülerken gözlerin yaşarması hastalık değildir; gözler kendini nemlendiriyor.' },
+
+  /* --- hasta/sağlıklı dengesini kurmak için ek kartlar --- */
+  { i:'frown', t:'Dişi ağrıyor, bir şey yiyemiyor', k:'sick', d:'kolay' },
+  { i:'thermometer', t:'Alnı yanıyor, ateşi çıkmış', k:'sick', d:'kolay' },
+  { i:'wind', t:'Nefes almakta zorlanıyor', k:'sick', d:'orta' },
+  { i:'bandage', t:'Parmağını kesti, kanaması var', k:'sick', d:'orta' },
+  { i:'nausea', t:'Günlerdir iştahı yok, hiçbir şey yiyemiyor', k:'sick', d:'zor',
+    w:'Uzun süre iştahsızlık vücudun bir sorunu olduğunun işaretidir; doktora söylenmelidir.' },
+  { i:'bed', t:'Bütün gün uyusa da yorgunluğu geçmiyor', k:'sick', d:'zor',
+    w:'Dinlenmeye rağmen geçmeyen yorgunluk bir sağlık sorunu olabilir.' },
+
+  /* --- Urfa'ya özel: halay ve Teknofest --- */
+  { i:'ball', t:'Davul zurna çalınca halaya durdu, yarım saat oynadı', k:'well', d:'cokzor',
+    w:'Halay çekmek de bir spordur! Yarım saat halay, yarım saat yürüyüş kadar iyi gelir. Terlemek de bunun doğal sonucudur.' },
+  { i:'sun', t:"Teknofest'te güneşin altında saatlerce gezdi, başı döndü", k:'sick', d:'zor',
+    w:'Sıcakta uzun süre kalmak güneş çarpmasına yol açabilir. Gölgeye geçip bol su içmek gerekir.' }
 ];
-/* SINAV — 4 soru. Her biri FARKLI bir kavramı ölçer ve biri hariç hepsi
-   "düşündüren" sorudur; böylece az soruyla ayırt edici bir ölçüm yapılır.
-   Denge: 2 hasta / 2 sağlıklı. */
-const EXAM = shuffle([
-  // 1) Temel belirti — yapay zekâ en basit örneği tanıyor mu?
+/* SINAV HAVUZU. Oyun sonunda buradan 3 soru seçilir; seçim, çocuğun eğitim
+   sırasında YANLIŞ öğrettiği kartlara benzeyecek şekilde yapılır (bkz. buildExam).
+   Böylece yapay zekâ "zayıf kaldığı" konudan sınanır, hepsini birden bilemez. */
+const EXAM_POOL = [
   { i:'nausea', t:'Midesi bulanıyor, kendini kötü hissediyor', k:'sick', d:'kolay',
     w:'Mide bulantısı, vücudun bir şeylerin yolunda olmadığını söyleme biçimidir.' },
-  // 2) Sebep → sonuç: davranış hastalığa yol açıyor
+  { i:'bike', t:'Her gün Dicle kenarında bisiklet sürüyor', k:'well', d:'kolay',
+    w:'Düzenli hareket kalbi ve kasları güçlendirir; bu sağlıklı bir alışkanlıktır.' },
+  { i:'dizzy', t:'Başı dönüyor, ayakta duramıyor', k:'sick', d:'orta',
+    w:'Baş dönmesi dinlenmeyi ve bir büyüğe haber vermeyi gerektiren bir belirtidir.' },
+  { i:'soap', t:'Yemekten önce ellerini sabunla yıkıyor', k:'well', d:'orta',
+    w:'El yıkamak mikropları uzaklaştırır; hastalanmamanın en kolay yoludur.' },
   { i:'cloudrain', t:'Kışın saçları ıslak dışarı çıktı, burnu akmaya başladı', k:'sick', d:'zor',
     w:'Soğukta ıslak saçla gezmek vücudu üşütebilir; akan burun bunun işaretidir.' },
-  // 3) Korunma = sağlık: belirti yokken yapılan doğru davranış
   { i:'umbrella', t:'Güneşe çıkmadan önce güneş kremi sürüyor', k:'well', d:'zor',
     w:'Güneş kremi cildi korur. Hasta olmadan önlem almak sağlıklı bir davranıştır.' },
-  // 4) Normal beden tepkisi ≠ hastalık (kelime oyunu)
+  { i:'phone', t:'Gece boyu ekrana baktı, gözleri kızardı ve başı ağrıyor', k:'sick', d:'cokzor',
+    w:'Çok ekran gözleri yorar ve baş ağrıtır; bu bir sağlık sorunudur.' },
   { i:'laugh', t:'Arkadaşıyla gülmekten karnı ağrıdı', k:'well', d:'cokzor',
     w:'Gülmekten karnın ağrıması hastalık değildir; kahkaha kasları çalıştırır ve sağlığa iyi gelir.' }
-]);
+];
+let EXAM = [];                 // oyun sonunda doldurulur
+let missed = [];               // yanlış öğretilen kartların {k,d} kaydı
+
+/* Çocuğun hatalarına BENZEYEN 3 soru seçer. Hata yoksa dengeli bir set verir. */
+function buildExam(){
+  const picks = [];
+  const score = q => {
+    let sc = Math.random() * 0.9;                        // küçük rastgelelik
+    for(const m of missed){
+      if(m.k === q.k) sc += 2.2;                         // aynı taraf (hasta/sağlıklı)
+      if(m.d === q.d) sc += 1.8;                         // aynı zorluk
+      if(m.k === q.k && m.d === q.d) sc += 1.5;          // tam eşleşme
+    }
+    return sc;
+  };
+  const ranked = [...EXAM_POOL].sort((a,b) => score(b) - score(a));
+
+  // en az bir hasta ve bir sağlıklı soru bulunsun
+  const firstSick = ranked.find(q => q.k === 'sick');
+  const firstWell = ranked.find(q => q.k === 'well');
+  if(firstSick) picks.push(firstSick);
+  if(firstWell) picks.push(firstWell);
+  for(const q of ranked){
+    if(picks.length >= 3) break;
+    if(!picks.includes(q)) picks.push(q);
+  }
+  EXAM = shuffle(picks.slice(0,3));
+}
 function shuffle(a){ return [...a].sort(()=>Math.random()-0.5); }
 const DL = { kolay:'Kolay', orta:'Orta', zor:'Zor', cokzor:'Çok Zor' };
 
@@ -887,7 +935,9 @@ const HAPPY = ['Karpuz gibi tatlı bir örnek oldu bu.','Aferin, tam isabet.',
   'Bu bilgiyi Göbeklitepe gibi sağlam bir yere kazıdım.','Dicle gibi akıp geldi bu bilgi.',
   'Kaburga dolması kadar sağlam öğrendim.',
   'Bunu Balıklıgöl kadar berrak hatırlayacağım.',
-  'İsotu da çiğ köfteyi de öğrendim, iki şehrin tadı da bende.'];
+  'İsotu da çiğ köfteyi de öğrendim, iki şehrin tadı da bende.',
+  "Teknofest'te stant açsak, seni baş mühendis yaparlar!",
+  'Bu hızla gidersen sana halay başı bile olurum.'];
 const PUZZLED = ['İsot biberi gibi acayip karıştı kafam.','Dur hele, bu iş bir garip oldu.',
   'Vallahi şaşırdım, karpuzu tuzsuz yemiş gibi oldum.',
   'Kafam çiğ köfte gibi yoğruldu resmen.'];
@@ -903,7 +953,7 @@ const pick1 = a => a[Math.floor(Math.random()*a.length)];
 let MODE = 'big';          // 'kid' = 10 yaş altı (sınavsız), 'big' = sınavlı
 /* Hedef = toplanacak PUAN. Normal kart 1 puan; özel kartlar 2 veya 3 puan.
    Özel kartlar rastgele değil, PLANLI dağıtılır (bkz. specials). */
-let TARGET = 15;
+let TARGET = 14;
 let specials = [];          // o oyunda dağıtılacak özel kart değerleri
 let good=0, bad=0, taught=0, qi=0, youScore=0, yzScore=0, choice=null;
 let sound=true, voice=false;
@@ -1004,17 +1054,17 @@ function chooseMode(m){
   if(m === 'kid'){
     // Küçükler: çok zor kelime oyunları çıkarılır, 15 kart, daha sakin yağmur
     pool = TEACH.filter(c => c.d !== 'cokzor');
-    seen = new Set(); spawnIdx = 0; deck = shuffle(pool);
-    TARGET = 12;                       // küçük mod: ~10 kart
-    specials = shuffle([3,2,2]);       // küçükte 1 tane ×3, 2 tane ×2
+    seen = new Set(); spawnIdx = 0; missed = []; deck = buildDeck(pool);
+    TARGET = 12;                       // küçük mod: ~8 kart
+    specials = shuffle([3,2,2,2]);     // küçükte 1 tane ×3, 3 tane ×2
     $('step3').classList.add('hidden');
     $('lede').textContent = 'Yapay zekâ bomboş bir defter gibi, hiçbir şey bilmiyor. Kartları doğru tarafa atarak ona hasta ve sağlıklı durumları öğreteceksin!';
     $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Hepsini toplayınca kocaman bir sürpriz var!</span>';
   } else {
     pool = [...TEACH];
-    seen = new Set(); spawnIdx = 0; deck = shuffle(pool);
-    TARGET = 15;                       // büyük mod: ~10 kart
-    specials = shuffle([3,3,2,2,2]);   // 2 tane ×3, 3 tane ×2
+    seen = new Set(); spawnIdx = 0; missed = []; deck = buildDeck(pool);
+    TARGET = 14;                       // büyük mod: ~8 kart
+    specials = shuffle([3,3,2,2,2,2]); // 2 tane ×3, 4 tane ×2 (hızlı tur)
     $('step3').classList.remove('hidden');
     $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Altın kartlar ×2, özel kartlar ×3 puan!</span>';
   }
@@ -1075,9 +1125,25 @@ function loop(){
 /* Aynı oyunda kart tekrarını önler: deste bitince önce HİÇ GÖSTERİLMEMİŞ
    kartlarla doldurulur; hepsi gösterildiyse ancak o zaman baştan karılır. */
 let pool = [], seen = new Set(), spawnIdx = 0;
+/* Desteyi hasta/sağlıklı DÖNÜŞÜMLÜ dizer: kısa bir oyunda bile çocuk
+   iki tarafı da dengeli görür, hep aynı taraf gelmez. */
+function buildDeck(cards){
+  const sick = shuffle(cards.filter(c => c.k === 'sick'));
+  const well = shuffle(cards.filter(c => c.k === 'well'));
+  const out = [];
+  let turn = Math.random() < 0.5 ? 'sick' : 'well';   // hangi taraftan başlasın
+  while(sick.length || well.length){
+    const first  = turn === 'sick' ? sick : well;
+    const second = turn === 'sick' ? well : sick;
+    if(first.length)  out.push(first.shift());
+    else if(second.length) out.push(second.shift());
+    turn = turn === 'sick' ? 'well' : 'sick';
+  }
+  return out;
+}
 function refill(){
   const unseen = pool.filter(c => !seen.has(c.t));
-  deck = shuffle(unseen.length ? unseen : pool);
+  deck = buildDeck(unseen.length ? unseen : pool);
 }
 function spawn(){
   if(deck.length===0) refill();
@@ -1148,11 +1214,14 @@ function grabify(o){
     o.grabT=performance.now(); o.moveT=o.grabT;
     el.classList.add('held');
     try{ el.setPointerCapture(e.pointerId); }catch(_){}
-    measure();                                  // sürükleme başında tek ölçüm
+    // Ölçüm yalnızca hiç kart tutulmuyorken yenilenir; aksi hâlde ikinci parmak
+    // basınca birincinin kavrama noktası kayabilir.
+    if(!live.some(x => x!==o && x.held)) measure();
     o.gx=e.clientX-D.rect.left-o.x; o.gy=e.clientY-D.rect.top-o.y;
     o.lx=e.clientX; o.lt=o.grabT; o.side=null; S.grab();
   });
   el.addEventListener('pointermove', e=>{
+    if(o.pid != null && e.pointerId !== o.pid) return;   // başka parmak
     if(!o.held){
       // bekçi bırakmış ama parmak hâlâ ekranda: kartı tekrar eline ver
       if(o.down && o.pid===e.pointerId){
@@ -1175,7 +1244,8 @@ function grabify(o){
       el.classList.toggle('well-hint', side==='well');
     }
   }, { passive:true });
-  const up=()=>{
+  const up=(e)=>{
+    if(e && e.pointerId != null && o.pid != null && e.pointerId !== o.pid) return;
     o.down=false;
     if(!o.held) return;
     o.held=false;
@@ -1196,10 +1266,17 @@ function grabify(o){
   o.release = up;                                  // güvenlik ağı için dışarı aç
 }
 
-/* GÜVENLİK AĞI 1: pointerup oyun alanının dışında olursa kart takılı kalmasın */
+/* GÜVENLİK AĞI 1: pointerup oyun alanının dışında olsa bile kart takılı kalmasın.
+   ÖNEMLİ: yalnızca O PARMAĞA ait kart bırakılır. Aksi hâlde iki çocuk aynı anda
+   oynarken birinin parmağını kaldırması diğerinin kartını da düşürüyordu. */
 ['pointerup','pointercancel'].forEach(ev =>
-  window.addEventListener(ev, () => {
-    live.forEach(o => { o.down=false; if(o.held && o.release) o.release(); });
+  window.addEventListener(ev, (e) => {
+    live.forEach(o => {
+      if(o.pid === e.pointerId){            // sadece bu parmağın kartı
+        o.down=false;
+        if(o.held && o.release) o.release();
+      }
+    });
   })
 );
 /* GÜVENLİK AĞI 2: sekme arkaplana geçerse tüm kartları bırak */
@@ -1226,7 +1303,7 @@ function learn(c, side, val){
 
   // --- seri (kombo) takibi ---
   if(ok){ streak++; if(streak>bestStreak) bestStreak=streak; }
-  else  { streak = 0; }
+  else  { streak = 0; missed.push({ k:c.k, d:c.d }); }   // sınav bunlara benzer sorar
   renderStreak();
   const comboHit = ok && streak>0 && streak%3===0;   // 3, 6, 9...
 
@@ -1424,6 +1501,7 @@ function acc(diff){
   return Math.max(0.35, Math.min(0.96, p));
 }
 function startExam(){
+  buildExam();                       // sorular çocuğun hatalarına göre seçilir
   $('midOv').classList.add('hidden');
   play.classList.remove('active');
   $('exam').classList.add('active');
