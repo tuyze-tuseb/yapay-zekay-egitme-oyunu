@@ -590,7 +590,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v4.4</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v4.5</span></p>
 </div>
 
 <div class="stage">
@@ -1335,7 +1335,7 @@ function learn(c, side, val){
 
   // --- puanlama: özel kart yalnızca DOĞRU atılırsa tam değerini verir ---
   const worth = ok ? val : 1;
-  if(ok) good += worth; else bad++;
+  if(ok) good += worth; else bad += val;   // değerli kartı yanlış atmak daha ağır
   taught += worth;
   const el=$(side==='well'?'wellN':'sickN');
   el.textContent = parseInt(el.textContent)+1;
@@ -1518,13 +1518,16 @@ function celebrateKid(){
 }
 
 /* ============ EXAM ============ */
+/* Yapay zekânın isabet olasılığı.
+   Simetrik: doğru öğretilen her puan kadar, yanlış öğretilen her puan da etkiler.
+   ÖNEMLİ: alt sınır %5'tir. Çünkü her şey TERS öğretilirse yapay zekâ rastgele
+   değil, SİSTEMATİK OLARAK YANLIŞ cevap vermelidir — oyunun asıl dersi budur. */
 function acc(diff){
-  // temel isabet: doğru örnekler yükseltir, yanlış öğretilenler düşürür
-  let p = 0.58 + good*0.026 - bad*0.042;
+  let p = 0.5 + good*0.045 - bad*0.045;
   // kolay kartlarda daha emin, zor/tuzak kartlarda daha çok zorlanır
   const bias = { kolay: 0.14, orta: 0.05, zor: -0.03, cokzor: -0.09 };
   p += (bias[diff] || 0);
-  return Math.max(0.35, Math.min(0.96, p));
+  return Math.max(0.05, Math.min(0.96, p));
 }
 function startExam(){
   buildExam();                       // sorular çocuğun hatalarına göre seçilir
