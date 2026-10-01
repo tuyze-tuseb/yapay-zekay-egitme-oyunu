@@ -590,7 +590,7 @@
     <button class="back-lnk" onclick="backToAge()">← Geri</button>
   </div>
 
-  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v4.2</span></p>
+  <p class="foot">TÜSEB · Türkiye Sağlık Enstitüleri Başkanlığı — Şanlıurfa <span class="ver">v4.4</span></p>
 </div>
 
 <div class="stage">
@@ -873,9 +873,11 @@ const TEACH = [
     w:'Dinlenmeye rağmen geçmeyen yorgunluk bir sağlık sorunu olabilir.' },
 
   /* --- Urfa'ya özel: halay ve Teknofest --- */
-  { i:'ball', t:'Davul zurna çalınca halaya durdu, yarım saat oynadı', k:'well', d:'cokzor',
+  { i:'ball', t:'Davul zurna çalınca halaya durdu, yarım saat oynadı', k:'well', d:'cokzor', pin:true,
+    q:'Halayı ben de öğrensem mi? Devrelerim ritim tutuyor!',
     w:'Halay çekmek de bir spordur! Yarım saat halay, yarım saat yürüyüş kadar iyi gelir. Terlemek de bunun doğal sonucudur.' },
-  { i:'sun', t:"Teknofest'te güneşin altında saatlerce gezdi, başı döndü", k:'sick', d:'zor',
+  { i:'sun', t:"Teknofest'te güneşin altında saatlerce gezdi, başı döndü", k:'sick', d:'zor', pin:true,
+    q:"Teknofest'te beni de sahneye çıkarsalar, şapka takmayı unutmam!",
     w:'Sıcakta uzun süre kalmak güneş çarpmasına yol açabilir. Gölgeye geçip bol su içmek gerekir.' }
 ];
 /* SINAV HAVUZU. Oyun sonunda buradan 3 soru seçilir; seçim, çocuğun eğitim
@@ -1054,7 +1056,7 @@ function chooseMode(m){
   if(m === 'kid'){
     // Küçükler: çok zor kelime oyunları çıkarılır, 15 kart, daha sakin yağmur
     pool = TEACH.filter(c => c.d !== 'cokzor');
-    seen = new Set(); spawnIdx = 0; missed = []; deck = buildDeck(pool);
+    seen = new Set(); spawnIdx = 0; missed = []; deck = pinCards(buildDeck(pool));
     TARGET = 12;                       // küçük mod: ~8 kart
     specials = shuffle([3,2,2,2]);     // küçükte 1 tane ×3, 3 tane ×2
     $('step3').classList.add('hidden');
@@ -1062,7 +1064,7 @@ function chooseMode(m){
     $('goalTx').innerHTML = '<b>Hedef: ' + TARGET + ' puan</b><span>Hepsini toplayınca kocaman bir sürpriz var!</span>';
   } else {
     pool = [...TEACH];
-    seen = new Set(); spawnIdx = 0; missed = []; deck = buildDeck(pool);
+    seen = new Set(); spawnIdx = 0; missed = []; deck = pinCards(buildDeck(pool));
     TARGET = 14;                       // büyük mod: ~8 kart
     specials = shuffle([3,3,2,2,2,2]); // 2 tane ×3, 4 tane ×2 (hızlı tur)
     $('step3').classList.remove('hidden');
@@ -1145,6 +1147,19 @@ function refill(){
   const unseen = pool.filter(c => !seen.has(c.t));
   deck = buildDeck(unseen.length ? unseen : pool);
 }
+
+/* Bazı kartlar (Teknofest, halay) her oyunda mutlaka çıksın diye
+   destenin ilk sıralarına rastgele konumlara yerleştirilir. */
+function pinCards(d){
+  const pinned = pool.filter(c => c.pin);
+  if(!pinned.length) return d;
+  const rest = d.filter(c => !c.pin);
+  for(const c of shuffle(pinned)){
+    const pos = 1 + Math.floor(Math.random() * Math.min(4, rest.length));
+    rest.splice(pos, 0, c);
+  }
+  return rest;
+}
 function spawn(){
   if(deck.length===0) refill();
   const c = deck.shift();
@@ -1210,6 +1225,7 @@ function tick(now){
 function grabify(o){
   const el=o.el;
   el.addEventListener('pointerdown', e=>{
+    if(o.done) return;                       // atılmış kart
     o.held=true; o.down=true; o.pid=e.pointerId;
     o.grabT=performance.now(); o.moveT=o.grabT;
     el.classList.add('held');
@@ -1221,12 +1237,19 @@ function grabify(o){
     o.lx=e.clientX; o.lt=o.grabT; o.side=null; S.grab();
   });
   el.addEventListener('pointermove', e=>{
-    if(o.pid != null && e.pointerId !== o.pid) return;   // başka parmak
+    if(o.done) return;                                   // atılmış kart
+    if(o.pid != null && e.pointerId !== o.pid) return;    // başka parmak
     if(!o.held){
-      // bekçi bırakmış ama parmak hâlâ ekranda: kartı tekrar eline ver
-      if(o.down && o.pid===e.pointerId){
-        o.held=true; el.classList.add('held');
+      /* Kart herhangi bir sebeple elden çıkmış olabilir (bekçi, yakalama kaybı,
+         hatalı pointerup). Parmak hâlâ ekrandaysa kartı geri ver.
+         Dokunmatikte pointermove zaten yalnızca parmak ekrandayken gelir;
+         farede ise düğmenin basılı olması (buttons) kontrol edilir. */
+      const parmakEkranda = e.pointerType !== 'mouse' || e.buttons > 0;
+      if(parmakEkranda){
+        o.held=true; o.down=true; o.pid=e.pointerId;
+        el.classList.add('held');
         o.gx=e.clientX-D.rect.left-o.x; o.gy=e.clientY-D.rect.top-o.y;
+        o.lx=e.clientX; o.lt=performance.now(); o.moveT=o.lt;
       } else return;
     }
     o.x=e.clientX-D.rect.left-o.gx; o.y=e.clientY-D.rect.top-o.gy;
@@ -1245,6 +1268,7 @@ function grabify(o){
     }
   }, { passive:true });
   const up=(e)=>{
+    if(o.done) return;                       // atılmış kart
     if(e && e.pointerId != null && o.pid != null && e.pointerId !== o.pid) return;
     o.down=false;
     if(!o.held) return;
@@ -1287,6 +1311,8 @@ window.addEventListener('blur', () => {
   live.forEach(o => { if(o.held && o.release) o.release(); });
 });
 function fling(o, side){
+  if(o.done) return;              // aynı kart iki kez puanlanamaz
+  o.done = true;
   const i=live.indexOf(o); if(i>=0) live.splice(i,1);
   const el=o.el;
   el.style.transition='transform .42s cubic-bezier(.4,0,1,1), opacity .42s';
@@ -1325,7 +1351,7 @@ function learn(c, side, val){
   setTimeout(()=>mood(null), ok ? 700 : 1400);
 
   // Üst bar: kart bilgisini TEKRAR ETMEZ
-  say(comboHit ? comboLine() : chatter(ok), false);
+  say(comboHit ? comboLine() : (c.q || chatter(ok)), false);
 
   if(comboHit) confetti(10);
   if(taught>=TARGET) finishTeach();
